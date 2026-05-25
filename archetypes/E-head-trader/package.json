@@ -1,0 +1,13 @@
+{
+  "name": "@foru-workshop/archetype-e",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./src/handler.ts",
+  "dependencies": {
+    "@foru-workshop/contracts": "*",
+    "@foru-workshop/llm": "*",
+    "@foru-workshop/mock-clients": "*",
+    "zod": "^3.22.0"
+  }
+}
