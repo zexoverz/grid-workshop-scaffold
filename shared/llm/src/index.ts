@@ -1,5 +1,15 @@
 import { z } from "zod";
 
+export { loadSoul } from "./soul.js";
+export { codeBuddyChat, codeBuddyChatJson, codeBuddyCallsRemaining } from "./codebuddy.js";
+
+export type AgentRuntime = "openai" | "codebuddy";
+
+export function agentRuntime(): AgentRuntime {
+  const v = (process.env.AGENT_RUNTIME ?? "openai").toLowerCase();
+  return v === "codebuddy" ? "codebuddy" : "openai";
+}
+
 const DEFAULT_BASE_URL = "https://api.openai.com/v1";
 const DEFAULT_MODEL = "gpt-4o-mini";
 const DAILY_CAP = 30;

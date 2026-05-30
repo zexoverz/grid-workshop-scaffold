@@ -2,86 +2,66 @@
 // ARCHETYPE A — HEAD OF RESEARCH
 // ============================================================================
 //
-//   Your job: turn last-24h tweets + news + on-chain signals about a token
-//   into a structured Research brief.
+//   This brain is BOILERPLATE — it works out of the box. You may not need
+//   to touch this file at all. Customize the agent by editing SOUL.md.
 //
-//   Input shape  (locked):
-//     { token: "ETH" | "BTC" | "SOL", windowHours: number }
+//   Want different behavior? Two places to look:
+//     - SOUL.md ........ persona, tone, output shape (most edits go here)
+//     - brain.ts (here)  orchestration: what data to fetch, how many
+//                        records to pass to the LLM, retry logic
 //
-//   Output shape (locked — this is the MVS contract):
-//     {
-//       summary: string,                 // 40-800 chars
-//       sentiment: "bullish" | "bearish" | "neutral",
-//       confidence: number,              // 0..1
-//       sources: string[]                // 1-10 URLs you cited
-//     }
-//
-//   Tools available to you (already imported, just use them):
-//     - twitter.getRecentTweets(token)
-//     - news.getRecentHeadlines(token)
-//     - onchain.getLargeTransfers(token)
-//     - llm.chatJson(messages, schema)   ← rate-limited, 30 calls per key
-//     - fallback(input)                  ← no-LLM template path
-//
-//   Vibecode prompt to paste into CodeBuddy / Claude / Codex / Cursor:
-//
-//     "Write the brain for the Head of Research agent using the archetype A
-//      scaffold. Pull from mock-twitter and mock-news. Return summary,
-//      sentiment, confidence, sources. Match the OutputSchema."
+//   The brain's job:
+//     1. Load the SOUL (persona) from SOUL.md
+//     2. Fetch data from the mocks
+//     3. Hand it all to the LLM
+//     4. Fall back to a template if the LLM is unavailable
 //
 // ============================================================================
 
 import { news, onchain, twitter } from "@foru-workshop/mock-clients";
-import { chatJson, RateLimitError } from "@foru-workshop/llm";
+import {
+  agentRuntime,
+  chatJson,
+  codeBuddyChatJson,
+  loadSoul,
+  RateLimitError,
+} from "@foru-workshop/llm";
 import { OutputSchema, type Input, type Output } from "./contract.js";
 import { fallback } from "./fallback.js";
 
 export async function brain(input: Input): Promise<Output> {
-  // ─── ✂ ─── YOUR CODE STARTS HERE ─── ✂ ─────────────────────────────────────
-  //
-  //  Example skeleton — keep, modify, or replace entirely.
-  //  Aim for ~20-60 lines.
+  const soul = await loadSoul(import.meta.url);
 
+  const token = input.token as "ETH" | "BTC" | "SOL";
   const [tweets, headlines, largeTx] = await Promise.all([
-    twitter.getRecentTweets(input.token),
-    news.getRecentHeadlines(input.token),
-    onchain.getLargeTransfers(input.token).catch(() => []),
+    twitter.getRecentTweets(token),
+    news.getRecentHeadlines(token),
+    onchain.getLargeTransfers(token).catch(() => []),
   ]);
 
+  const messages = [
+    { role: "system" as const, content: soul },
+    {
+      role: "user" as const,
+      content: JSON.stringify({
+        input,
+        data: {
+          tweets: tweets.slice(0, 12),
+          headlines: headlines.slice(0, 8),
+          largeTransfers: largeTx.slice(0, 5),
+        },
+      }),
+    },
+  ];
+
+  const runtime = agentRuntime();
   try {
-    const result = await chatJson(
-      [
-        {
-          role: "system",
-          content:
-            "You are the Head of Research at a one-person Web3 trading firm. " +
-            "Produce concise, source-grounded research. Output JSON only.",
-        },
-        {
-          role: "user",
-          content: JSON.stringify({
-            token: input.token,
-            windowHours: input.windowHours,
-            tweets: tweets.slice(0, 12),
-            headlines: headlines.slice(0, 8),
-            largeTransfers: largeTx.slice(0, 5),
-            schemaHint: {
-              summary: "40-800 chars, factual, neutral tone",
-              sentiment: "bullish | bearish | neutral",
-              confidence: "0..1 based on signal strength + agreement",
-              sources: "1-10 URLs you cite (headline URLs are fine)",
-            },
-          }),
-        },
-      ],
-      OutputSchema,
-      { temperature: 0.3, maxTokens: 700 },
-    );
-    return result;
+    if (runtime === "codebuddy") {
+      return await codeBuddyChatJson(messages, OutputSchema, { maxTokens: 700 });
+    }
+    return await chatJson(messages, OutputSchema, { temperature: 0.3, maxTokens: 700 });
   } catch (err) {
     if (err instanceof RateLimitError) return fallback(input);
     throw err;
   }
-
-  // ─── ✂ ─── YOUR CODE ENDS HERE ─── ✂ ───────────────────────────────────────
 }

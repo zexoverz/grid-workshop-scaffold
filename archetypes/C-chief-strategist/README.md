@@ -4,21 +4,46 @@
 
 | | |
 |---|---|
+| **The persona** | `SOUL.md` |
+| **The runner** | `src/brain.ts` |
 | **Input** | `{ pair, horizon, riskTolerance }` |
 | **Output** | `{ recommendation, rationale, risks[], horizon }` |
-| **Primary mocks** | `mock-prices`, `mock-onchain` |
+| **Data** | `prices`, `onchain` ([catalog](../../mocks/README.md)) |
 
-## Prompt recipe
+## The boilerplate works out of the box
 
-```
-Write the brain for the Chief Strategist. Use prices.getOhlcv(pair, 60) and
-onchain.getLargeTransfers. Output recommendation (accumulate/hold/reduce/exit),
-rationale, 1-5 risks, horizon. Match the OutputSchema in src/contract.ts.
+```bash
+npx foru choose C
+npx foru test
+npx foru submit
 ```
 
-## OpenClaw deploy
+## To customize — edit `SOUL.md`
 
-```
-Wrap archetypes/C-chief-strategist/src/handler.ts as a FORU Grid agent for
-archetype C, deploy it, and return the callable URL.
-```
+### CodeBuddy recipes
+
+**Recipe 1 — change the recommendation set:**
+> Rewrite the recommendation enum from "accumulate | hold | reduce | exit"
+> to "long | neutral | short | flat". Update the JSON example and rules
+> in SOUL.md.
+
+**Recipe 2 — add macro context:**
+> Add a section: "I also consider macro context — when the input includes
+> a `macroNote` field, I weight it in the rationale." Then I'll update
+> brain.ts to pass it through.
+
+**Recipe 3 — add a confidence field:**
+> Add a `confidence` (0..1) field to the output shape, alongside
+> recommendation. Honest, low when signals conflict.
+
+## To customize — edit `src/brain.ts`
+
+Only when you want to change which data the LLM sees.
+
+**Recipe 4 — give it a longer window:**
+> In brain.ts, change the candle window from 60 to 240 (4 hours of 1m
+> candles). Slice the most recent 60 for the LLM.
+
+## OpenClaw deploy recipe
+
+`npx foru submit` prints the exact message.

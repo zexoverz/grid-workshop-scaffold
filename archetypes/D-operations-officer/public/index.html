@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Operations Officer — Operating Console</title>
+    <style>
+      :root {
+        --bg: #0b0d10; --panel: #14171c; --panel-2: #1c2026;
+        --border: #2a2f37; --text: #e7ebf0; --muted: #8a93a0;
+        --accent: #7cc4ff; --ok: #7ee787; --err: #ff7b72;
+        --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+      }
+      * { box-sizing: border-box; }
+      body { margin: 0; background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, sans-serif; line-height: 1.5; }
+      .wrap { max-width: 920px; margin: 0 auto; padding: 32px 24px 80px; }
+      header { margin-bottom: 24px; }
+      .tag { display: inline-block; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); margin-bottom: 6px; }
+      h1 { margin: 0 0 4px; font-size: 28px; font-weight: 600; }
+      .problem { color: var(--muted); font-size: 14px; margin-bottom: 16px; }
+      .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+      @media (max-width: 720px) { .grid { grid-template-columns: 1fr; } }
+      .panel { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 20px; }
+      .panel h2 { margin: 0 0 14px; font-size: 13px; font-weight: 600; color: var(--muted); letter-spacing: 0.06em; text-transform: uppercase; }
+      label { display: block; margin-bottom: 14px; font-size: 13px; color: var(--muted); }
+      input, select { width: 100%; margin-top: 6px; padding: 10px 12px; background: var(--panel-2); border: 1px solid var(--border); border-radius: 6px; color: var(--text); font-family: var(--mono); font-size: 14px; }
+      input:focus, select:focus { outline: 1px solid var(--accent); border-color: var(--accent); }
+      .row { display: flex; gap: 10px; align-items: center; margin-top: 4px; }
+      button { padding: 10px 18px; background: var(--accent); color: #07101a; border: 0; border-radius: 6px; font-weight: 600; font-size: 14px; cursor: pointer; }
+      button:disabled { opacity: 0.5; cursor: not-allowed; }
+      button.ghost { background: transparent; color: var(--muted); border: 1px solid var(--border); }
+      pre { margin: 0; white-space: pre-wrap; word-break: break-word; font-family: var(--mono); font-size: 13px; color: var(--text); background: var(--panel-2); border: 1px solid var(--border); border-radius: 6px; padding: 14px; min-height: 180px; max-height: 480px; overflow: auto; }
+      .status { font-family: var(--mono); font-size: 12px; color: var(--muted); margin-top: 10px; min-height: 16px; }
+      .status.err { color: var(--err); } .status.ok { color: var(--ok); }
+      details { margin-top: 16px; }
+      details summary { cursor: pointer; color: var(--muted); font-size: 13px; padding: 8px 0; }
+      details[open] summary { color: var(--text); }
+      .soul { max-height: 380px; overflow: auto; padding: 14px; background: var(--panel-2); border: 1px solid var(--border); border-radius: 6px; font-family: var(--mono); font-size: 12.5px; white-space: pre-wrap; }
+      footer { margin-top: 32px; color: var(--muted); font-size: 12px; font-family: var(--mono); }
+    </style>
+  </head>
+  <body>
+    <main class="wrap">
+      <header>
+        <div class="tag">Archetype D</div>
+        <h1>Operations Officer</h1>
+        <div class="problem">P4 — Operations monitoring</div>
+      </header>
+
+      <section class="grid">
+        <div class="panel">
+          <h2>Input</h2>
+          <form id="run-form">
+            <label>
+              Pair
+              <select id="pair">
+                <option>BTCUSDT</option>
+                <option>ETHUSDT</option>
+              </select>
+            </label>
+            <label>
+              Price %-change threshold
+              <input id="pricePctChange" type="number" step="0.1" min="0" max="50" value="2" />
+            </label>
+            <label>
+              Volume multiplier threshold
+              <input id="volumeMultiplier" type="number" step="0.1" min="1" max="20" value="3" />
+            </label>
+            <div class="row">
+              <button id="run-btn" type="submit">Run</button>
+              <button id="sample-btn" type="button" class="ghost">Sample</button>
+            </div>
+            <div id="status" class="status"></div>
+          </form>
+        </div>
+
+        <div class="panel">
+          <h2>Output</h2>
+          <pre id="output">// alerts / severity / evaluated</pre>
+        </div>
+      </section>
+
+      <details>
+        <summary>View SOUL (the persona running this agent)</summary>
+        <div class="soul" id="soul">loading…</div>
+      </details>
+
+      <footer>
+        Deterministic — no LLM call. Endpoints —
+        <code>POST /invoke</code> · <code>/mcp</code> · <code>GET /soul</code> · <code>GET /health</code>
+      </footer>
+    </main>
+
+    <script>
+      const $ = (id) => document.getElementById(id);
+      const form = $("run-form");
+      const status = $("status");
+      const output = $("output");
+      const runBtn = $("run-btn");
+
+      function setStatus(text, kind) {
+        status.textContent = text;
+        status.className = "status" + (kind ? " " + kind : "");
+      }
+
+      async function invoke() {
+        const payload = {
+          pair: $("pair").value,
+          thresholds: {
+            pricePctChange: Number($("pricePctChange").value) || 2,
+            volumeMultiplier: Number($("volumeMultiplier").value) || 3,
+          },
+        };
+        runBtn.disabled = true;
+        setStatus("Running…");
+        const t0 = performance.now();
+        try {
+          const res = await fetch("/invoke", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          });
+          const body = await res.json();
+          output.textContent = JSON.stringify(body, null, 2);
+          const dur = Math.round(performance.now() - t0);
+          if (!res.ok) setStatus(`HTTP ${res.status} (${dur}ms)`, "err");
+          else setStatus(`200 OK in ${dur}ms`, "ok");
+        } catch (err) {
+          output.textContent = String(err);
+          setStatus("Network error", "err");
+        } finally {
+          runBtn.disabled = false;
+        }
+      }
+
+      form.addEventListener("submit", (e) => { e.preventDefault(); invoke(); });
+      $("sample-btn").addEventListener("click", () => {
+        $("pair").value = "BTCUSDT";
+        $("pricePctChange").value = "2";
+        $("volumeMultiplier").value = "3";
+        invoke();
+      });
+
+      fetch("/soul").then((r) => r.text())
+        .then((t) => ($("soul").textContent = t))
+        .catch(() => ($("soul").textContent = "(failed to load SOUL.md)"));
+    </script>
+  </body>
+</html>

@@ -1,0 +1,31 @@
+token,id,source,title,url,hoursAgo
+ETH,eh01,MockCoinDesk,"Ether ETFs Notch Best Week Since Launch as BlackRock's ETHA Crosses $5B AUM","https://mock-news.foruai.io/eth/eth-etf-weekly",1
+ETH,eh02,MockTheBlock,"Validator Exit Queue Drains to Two-Day Wait as Network Stabilizes","https://mock-news.foruai.io/eth/validator-queue",3
+ETH,eh03,MockBlockworks,"Pectra Hardfork Locked in for Mainnet — Devs Confirm Late-Cycle Target","https://mock-news.foruai.io/eth/pectra-mainnet",5
+ETH,eh04,MockDecrypt,"Base L2 Daily Transactions Eclipse Arbitrum for Third Week","https://mock-news.foruai.io/eth/base-vs-arb",7
+ETH,eh05,MockCoinTelegraph,"Restaking TVL Hits $18B as EigenLayer Captures 60% of New Deposits","https://mock-news.foruai.io/eth/restaking-18b",10
+ETH,eh06,MockBanklessHQ,"Smart Account Adoption Jumps to 14% of Mainnet Transactions","https://mock-news.foruai.io/eth/aa-adoption",13
+ETH,eh07,MockDLNews,"ETH/BTC Pair Tests Multi-Month Support — Quants Watch 0.048 Level","https://mock-news.foruai.io/eth/ethbtc-support",16
+ETH,eh08,MockMessari,"Spot Ether ETF AUM Surpasses $15B — Adoption Outpacing BTC at Same Point","https://mock-news.foruai.io/eth/etf-aum-15b",19
+ETH,eh09,MockCoinDesk,"Lido Withdrawal Queue Clears for First Time Since Shanghai","https://mock-news.foruai.io/eth/lido-queue-clear",22
+ETH,eh10,MockTheBlock,"Coinbase Files for Spot Ether Index ETF Variant","https://mock-news.foruai.io/eth/cb-index-etf",24
+BTC,bh01,MockCoinDesk,"MicroStrategy Acquires Additional 11,931 BTC at $96,420 Average — Holdings Top 252k","https://mock-news.foruai.io/btc/mstr-purchase",2
+BTC,bh02,MockReuters,"Spot Bitcoin ETF Cumulative Net Inflow Surpasses $32B","https://mock-news.foruai.io/btc/etf-32b",4
+BTC,bh03,MockBloomberg,"SAB 121 Repeal Bill Advances — Banks One Step Closer to Crypto Custody","https://mock-news.foruai.io/btc/sab121",6
+BTC,bh04,MockFTAlphaville,"Long-Term Holder Supply Hits All-Time High — 73.4% of BTC Aged Over 155 Days","https://mock-news.foruai.io/btc/lth-ath",9
+BTC,bh05,MockTheBlock,"Bitcoin Mining Hash Price Reclaims Pre-Halving Levels at $52/PH/Day","https://mock-news.foruai.io/btc/hash-price",11
+BTC,bh06,MockBlockworks,"Realized Cap Climbs to $720B as Net Liquidity Flows Out of Exchanges","https://mock-news.foruai.io/btc/realized-cap-720",14
+BTC,bh07,MockNYTimes,"El Salvador's Bitcoin Treasury Crosses $560M Mark — Unrealized Gain Tops $300M","https://mock-news.foruai.io/btc/elsalvador-560",17
+BTC,bh08,MockCoinTelegraph,"Wisdom Tree Reports BTC ETF AUM Exceeds Combined Silver ETFs","https://mock-news.foruai.io/btc/btc-vs-silver",20
+BTC,bh09,MockDecrypt,"BTC Dominance Back Above 58% as Alts Underperform on Weekly Basis","https://mock-news.foruai.io/btc/dominance-58",22
+BTC,bh10,MockMessari,"BTC Futures Open Interest Reaches $34B with Funding Rates Below Cycle Average","https://mock-news.foruai.io/btc/oi-34b",24
+SOL,sh01,MockCoinDesk,"Firedancer Beta Hits 1.1M TPS in Stake-Weighted Test Environment","https://mock-news.foruai.io/sol/firedancer-1.1m",1
+SOL,sh02,MockTheBlock,"Phantom Wallet Crosses 12M Monthly Active Users — Largest Non-Custodial Wallet by MAU","https://mock-news.foruai.io/sol/phantom-12m",3
+SOL,sh03,MockBlockworks,"Solana DEX Volume Surpasses Ethereum Mainnet for Ninth Straight Week","https://mock-news.foruai.io/sol/dex-9weeks",5
+SOL,sh04,MockSolanaFloor,"Token-2022 Confidential Transfers Confirmed for Mainnet Next Month","https://mock-news.foruai.io/sol/token2022-confidential",7
+SOL,sh05,MockMessari,"Solana TVL Crosses $11B — Liquid Staking Tokens Account for 47% of Stake","https://mock-news.foruai.io/sol/tvl-11b",10
+SOL,sh06,MockDecrypt,"Jupiter Aggregator 24h Volume Tops $1.84B as Memecoin Share Falls to 38%","https://mock-news.foruai.io/sol/jupiter-volume",13
+SOL,sh07,MockCoinTelegraph,"Backpack Exchange Adds 38 New Countries — Solana-Native CEX Onboarding Surges","https://mock-news.foruai.io/sol/backpack-84",16
+SOL,sh08,MockNansen,"Smart Money Net Inflow Into SOL Tops $340M Over Past Week","https://mock-news.foruai.io/sol/smart-money-340m",19
+SOL,sh09,MockBanklessHQ,"DePIN Sector on Solana Up 38% on the Week — Helium, Hivemapper, Render Lead","https://mock-news.foruai.io/sol/depin-38pct",22
+SOL,sh10,MockBlockworks,"GMX Governance Considers V2 Perp Deployment on Solana","https://mock-news.foruai.io/sol/gmx-on-sol",24

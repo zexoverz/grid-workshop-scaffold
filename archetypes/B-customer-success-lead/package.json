@@ -4,9 +4,14 @@
   "private": true,
   "type": "module",
   "main": "./src/handler.ts",
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "start": "tsx src/server.ts"
+  },
   "dependencies": {
     "@foru-workshop/contracts": "*",
     "@foru-workshop/llm": "*",
+    "@modelcontextprotocol/sdk": "^1.29.0",
     "zod": "^3.22.0"
   }
 }

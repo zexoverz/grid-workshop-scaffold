@@ -1,0 +1,46 @@
+token,id,author,text,likes,retweets,minutesAgo
+ETH,et01,vitalikbuterin,"Pectra hardfork progressing well on testnets. EIP-7702 will reshape account abstraction UX.",18420,4250,12
+ETH,et02,DefiantNews,"ETH ETF net inflows hit weekly high of $1.2B led by BlackRock and Fidelity.",6210,1820,35
+ETH,et03,sassal0x,"Validator queue continues to drain. Active set up 0.3% this week. Net staking yield trending toward 3.1%.",4810,1190,58
+ETH,et04,thezachxbt,"Tracking a 22k ETH deposit to Kraken from an OTC desk wallet that has been dormant 14 months.",9120,2810,72
+ETH,et05,DegenSpartan,"L2 fee compression keeps eating mainnet revenue. ETH-as-money thesis intact but issuance offset narrowing.",2050,540,98
+ETH,et06,milesdeutscher,"ETH/BTC pair finally bouncing off the 0.048 support. Watch the 0.054 reclaim for trend confirmation.",3380,720,110
+ETH,et07,CryptoCobain,"DEX volumes on Base outpacing Arbitrum for the third straight week. Coinbase distribution is real.",5910,1340,125
+ETH,et08,BanklessHQ,"Restaking TVL crossed $18B today. EigenLayer alone accounts for 60% of new deposits this week.",4720,990,138
+ETH,et09,IamNomad,"Saw 8 ETF creation units printed in the first hour. That is unusually active before NY open.",1820,410,155
+ETH,et10,thedefiedge,"Lido withdrawals normalized this week — no more queue tailwind for spot price.",2310,580,170
+ETH,et11,RyanWatkins_,"Spot ETH ETF AUM passed $15B for the first time. Adoption pace ahead of BTC ETF at the same point.",6950,1740,192
+ETH,et12,koeppelmann,"Smart account adoption metrics: 14% of mainnet txs are now from AA wallets. Up from 6% a year ago.",1480,330,218
+ETH,et13,DCInvestor,"If you only look at ETH/USD you are missing the story. ETH dominance against the L1 basket is breaking out.",5410,1290,245
+ETH,et14,Route2FI,"Sentiment is muted but ETH funding rates are quietly turning positive across Binance and Bybit.",3120,750,270
+ETH,et15,FedeNicolas,"On-chain: net stETH unwrap activity higher than wrap. Some restakers rotating to native validators.",1640,380,295
+BTC,bt01,saylor,"MicroStrategy added 11,931 BTC at avg price $96,420. Total holdings now 252,220 BTC.",42150,12380,18
+BTC,bt02,WClementeIII,"Long-term holder supply at all-time high. Coins age >155 days = 73.4% of circulating.",8920,2410,40
+BTC,bt03,_checkmatey_,"Net liquidity outflow from exchanges this week. About 18k BTC moved to cold storage.",6240,1580,65
+BTC,bt04,glassnode,"Realized cap reached $720B — capital inflow accelerating after 6-week consolidation.",5310,1290,82
+BTC,bt05,IranInBitcoin,"Mining hash price at $52/PH/day — pre-halving levels finally reclaimed.",2810,720,105
+BTC,bt06,nic__carter,"Spot BTC ETF cumulative net inflow crossed $32B. Largest ETF launch in history by orders of magnitude.",11420,3150,128
+BTC,bt07,WisdomTree,"BTC ETF assets under management surpassed silver ETFs combined this morning.",4710,1180,142
+BTC,bt08,RaoulGMI,"BTC consolidation pattern + ETF inflows + halving lag = setup looks like Q4 2020 to me.",9810,2740,165
+BTC,bt09,jchervinsky,"SAB 121 repeal vote moving forward. If passed, custody balance sheet relief unlocks bank flows.",3520,810,190
+BTC,bt10,LynAldenContact,"USD broad money supply re-accelerating. Historical correlation with BTC at 0.7 with a 3-month lag.",7240,1830,215
+BTC,bt11,DocumentingBTC,"El Salvador Bitcoin treasury at 5,890 BTC. Average buy now ~$45k. Net unrealized P&L > $300M.",6810,1740,240
+BTC,bt12,APompliano,"BTC dominance back above 58%. Alt season delayed but not denied.",5230,1290,265
+BTC,bt13,binanceresearch,"BTC futures open interest at $34B — back near the March peak with funding rates lower. Cleaner setup.",3140,720,290
+BTC,bt14,intocryptoverse,"Watch the 60-day moving average around $94,800 — past three retests held with momentum reset.",2210,510,315
+BTC,bt15,arthurhayes,"USD/JPY decoupling continues. BTC quietly outperforming on a JPY basis. Carry trade unwind tailwind.",8410,2030,340
+SOL,so01,aeyakovenko,"Token2022 extensions: confidential transfers shipping mainnet next month. Big for institutional flows.",5210,1310,22
+SOL,so02,trentdotsol,"Firedancer beta block production hit 1.1M TPS in test environment.",4820,1240,48
+SOL,so03,solanafloor,"DEX volume on Solana 7d: $14.2B — surpasses Ethereum mainnet for the 9th straight week.",3120,820,71
+SOL,so04,RedactedNoob,"Phantom monthly active users crossed 12M. Largest non-custodial wallet by MAU now.",2810,710,95
+SOL,so05,_AdrianTrummer,"SOL staking yield drifted to 6.8%. Restaking primitives launching in Q4 will compress this.",1920,510,118
+SOL,so06,JupiterExchange,"Aggregator volume past 24h: $1.84B. Memecoin share dropped to 38% — rotation into majors.",3420,890,140
+SOL,so07,kyle_samani,"SOL/ETH pair making a higher low for the first time in 6 weeks. Watch 0.061 ratio for confirmation.",4720,1180,162
+SOL,so08,JackMallers,"Strike processing SOL deposits via Lightning. Cross-chain rails finally working at retail scale.",2380,620,184
+SOL,so09,DefillamaSol,"Solana TVL crossed $11B. JTO, JupSOL and Marinade comprise 47% of staked SOL.",1620,410,210
+SOL,so10,nansen_ai,"Smart money inflow into SOL +$340M over 7 days. Net positive every day this month.",2910,720,235
+SOL,so11,toly,"Block stake-weighted QoS deployed on testnet. Will reduce transaction landing variance significantly.",6810,1810,258
+SOL,so12,solidsnake0x,"DePIN tokens on Solana up 38% on weekly basis. Helium, Hivemapper, Render leading.",1280,330,282
+SOL,so13,Reggie_Solana,"Backpack exchange now in 84 countries. SOL native CEX onboarding +200% MoM.",2110,540,308
+SOL,so14,muratbuyukn,"Solana NFT volume rebounded — Magic Eden and Tensor combined did $42M past 24h.",1430,360,332
+SOL,so15,GMX_IO,"Considering deploying GMX V2 perp markets on Solana. Governance proposal soon.",2620,640,358

@@ -1,15 +1,19 @@
 import { z } from "zod";
 
+// Loose contract — field names matter, value shapes are advisory.
+// The SOUL.md describes the *expected* values; this just makes sure
+// the agent returned the right fields.
+
 export const ResearchInputSchema = z.object({
-  token: z.enum(["ETH", "BTC", "SOL"]),
-  windowHours: z.number().int().positive().max(72).default(24),
+  token: z.string(),
+  windowHours: z.number().optional().default(24),
 });
 
 export const ResearchOutputSchema = z.object({
-  summary: z.string().min(40).max(800),
-  sentiment: z.enum(["bullish", "bearish", "neutral"]),
-  confidence: z.number().min(0).max(1),
-  sources: z.array(z.string().url()).min(1).max(10),
+  summary: z.string(),
+  sentiment: z.string(),
+  confidence: z.number(),
+  sources: z.array(z.string()),
 });
 
 export type ResearchInput = z.infer<typeof ResearchInputSchema>;

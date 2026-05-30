@@ -1,62 +1,31 @@
+// Grid deploy is currently MANUAL — FORU eng will add the agent to Grid
+// on workshop day. This module is a small helper that prints the exact
+// payload a facilitator (or OpenClaw) needs to register your agent.
+//
+// Replace the body with a real API call once the Grid deploy spec is
+// published. The shape below is intentionally minimal so it survives a
+// rewrite without churning the CLI.
+
 import type { ArchetypeCode } from "@foru-workshop/contracts";
 
-const DEFAULT_GRID_URL = "https://grid.foruai.io";
-
-export interface DeployRequest {
+export interface DeployManifest {
   archetype: ArchetypeCode;
   agentName: string;
   description: string;
   entrypoint: string;
+  soulPath: string;
 }
 
-export interface DeployResult {
-  agentId: string;
-  callableUrl: string;
-  deployedAt: string;
+export function buildManifest(req: DeployManifest): DeployManifest {
+  return req;
 }
 
-// TODO(foru-eng): replace this stub once Grid deploy API is finalized.
-// Open questions tracked in docs/troubleshooting.md → "Grid deploy spec".
-// Until then, OpenClaw is the canonical deploy path (see archetype README).
-export async function deploy(req: DeployRequest): Promise<DeployResult> {
-  const baseUrl = process.env.GRID_API_URL ?? DEFAULT_GRID_URL;
-  const token = process.env.GRID_TOKEN;
-
-  if (!token) {
-    throw new Error(
-      "GRID_TOKEN not set. Run `npx foru submit` for the OpenClaw-mediated flow, " +
-        "or fill GRID_TOKEN in .env if you have a direct Grid token.",
-    );
-  }
-
-  const res = await fetch(`${baseUrl}/v1/agents`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify(req),
-  });
-
-  if (!res.ok) {
-    const detail = await res.text().catch(() => "");
-    throw new Error(`Grid deploy ${res.status}: ${detail.slice(0, 200)}`);
-  }
-  return (await res.json()) as DeployResult;
-}
-
-export async function callAgent<T>(
-  callableUrl: string,
-  payload: unknown,
-): Promise<T> {
-  const res = await fetch(callableUrl, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
-  if (!res.ok) {
-    const detail = await res.text().catch(() => "");
-    throw new Error(`agent ${res.status}: ${detail.slice(0, 200)}`);
-  }
-  return (await res.json()) as T;
+export function formatHandoff(manifest: DeployManifest): string {
+  return [
+    `Archetype:    ${manifest.archetype}`,
+    `Agent name:   ${manifest.agentName}`,
+    `Description:  ${manifest.description}`,
+    `Brain:        ${manifest.entrypoint}`,
+    `SOUL:         ${manifest.soulPath}`,
+  ].join("\n");
 }

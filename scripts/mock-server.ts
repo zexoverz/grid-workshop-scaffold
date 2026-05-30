@@ -8,9 +8,73 @@
 //   /chat/completions             — OpenAI-compatible fake LLM that returns
 //                                   schema-valid JSON depending on the
 //                                   archetype detected in the prompt.
+//
+// Mock data is read from CSVs in mocks/data/*.csv at server start.
+// Edit those CSVs to enrich what your agent sees — no code changes required.
 
+import { promises as fs } from "node:fs";
 import http from "node:http";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { URL } from "node:url";
+
+// ─── CSV loader ─────────────────────────────────────────────────────────────
+const HERE = path.dirname(fileURLToPath(import.meta.url));
+const DATA_DIR = path.resolve(HERE, "../mocks/data");
+
+function parseCsvRow(line: string): string[] {
+  const out: string[] = [];
+  let cur = "";
+  let inQuote = false;
+  for (let i = 0; i < line.length; i++) {
+    const c = line[i];
+    if (c === '"') {
+      if (inQuote && line[i + 1] === '"') {
+        cur += '"';
+        i++;
+      } else {
+        inQuote = !inQuote;
+      }
+    } else if (c === "," && !inQuote) {
+      out.push(cur);
+      cur = "";
+    } else {
+      cur += c;
+    }
+  }
+  out.push(cur);
+  return out;
+}
+
+async function loadCsv(file: string): Promise<Record<string, string>[]> {
+  const text = await fs.readFile(path.join(DATA_DIR, file), "utf8");
+  const lines = text.split(/\r?\n/).filter((l) => l.trim().length > 0);
+  if (lines.length === 0) return [];
+  const headers = parseCsvRow(lines[0]);
+  return lines.slice(1).map((line) => {
+    const cells = parseCsvRow(line);
+    const row: Record<string, string> = {};
+    headers.forEach((h, i) => (row[h] = cells[i] ?? ""));
+    return row;
+  });
+}
+
+interface MockDataset {
+  tweets: Record<string, string>[];
+  headlines: Record<string, string>[];
+  prices: Record<string, string>[];
+  onchain: Record<string, string>[];
+}
+
+async function loadDataset(): Promise<MockDataset> {
+  const [tweets, headlines, prices, onchain] = await Promise.all([
+    loadCsv("tweets.csv"),
+    loadCsv("headlines.csv"),
+    loadCsv("prices.csv"),
+    loadCsv("onchain.csv"),
+  ]);
+  return { tweets, headlines, prices, onchain };
+}
 
 const ARCHETYPE_KEYWORDS: Record<string, string> = {
   A: "Head of Research",
@@ -74,88 +138,77 @@ function llmReplyFor(code: "A" | "B" | "C" | "E"): unknown {
   }
 }
 
-function tweets(token: string) {
+function tweets(token: string, ds: MockDataset) {
+  const now = Date.now();
+  const rows = ds.tweets.filter((r) => r.token === token);
   return {
     token,
     windowHours: 24,
-    tweets: Array.from({ length: 10 }, (_, i) => ({
-      id: `t${i}`,
-      author: `crypto_${i}`,
-      text: `${token} ${i % 2 === 0 ? "looking strong" : "watching closely"} #${token}`,
-      likes: 100 + i * 50,
-      retweets: 20 + i * 10,
-      createdAt: new Date(Date.now() - i * 60_000).toISOString(),
+    tweets: rows.map((r) => ({
+      id: r.id,
+      author: r.author,
+      text: r.text,
+      likes: Number(r.likes),
+      retweets: Number(r.retweets),
+      createdAt: new Date(now - Number(r.minutesAgo) * 60_000).toISOString(),
     })),
   };
 }
 
-function headlines(token: string) {
+function headlines(token: string, ds: MockDataset) {
+  const now = Date.now();
+  const rows = ds.headlines.filter((r) => r.token === token);
   return {
     token,
     windowHours: 24,
-    headlines: [
-      {
-        id: "h1",
-        source: "MockCoinDesk",
-        title: `${token} ETF inflows hit weekly high`,
-        url: "https://mock-news.foruai.io/articles/eth-etf-flows",
-        publishedAt: new Date(Date.now() - 3_600_000).toISOString(),
-        tokens: [token],
-      },
-      {
-        id: "h2",
-        source: "MockTheBlock",
-        title: `On-chain ${token} validator queue stable`,
-        url: "https://mock-news.foruai.io/articles/validator-queue",
-        publishedAt: new Date(Date.now() - 7_200_000).toISOString(),
-        tokens: [token],
-      },
-    ],
+    headlines: rows.map((r) => ({
+      id: r.id,
+      source: r.source,
+      title: r.title,
+      url: r.url,
+      publishedAt: new Date(now - Number(r.hoursAgo) * 3_600_000).toISOString(),
+      tokens: [token],
+    })),
   };
 }
 
-function ohlcv(symbol: string) {
-  const candles = Array.from({ length: 60 }, (_, i) => {
-    const base = symbol === "BTCUSDT" ? 60_000 : 3_000;
-    const noise = Math.sin(i / 5) * (base * 0.005);
-    const close = base + noise;
-    return {
-      openTime: Date.now() - (60 - i) * 60_000,
-      open: close - 5,
-      high: close + 10,
-      low: close - 10,
-      close,
-      volume: 100 + Math.abs(noise),
-    };
-  });
-  return { symbol, interval: "1m", candles };
+function ohlcv(symbol: string, ds: MockDataset) {
+  const now = Date.now();
+  const rows = ds.prices
+    .filter((r) => r.symbol === symbol)
+    .map((r) => ({
+      openTime: now - Number(r.minutesAgo) * 60_000,
+      open: Number(r.open),
+      high: Number(r.high),
+      low: Number(r.low),
+      close: Number(r.close),
+      volume: Number(r.volume),
+    }))
+    .sort((a, b) => a.openTime - b.openTime); // oldest → newest
+  return { symbol, interval: "1m", candles: rows };
 }
 
-function largeTransfers(token: string) {
+function largeTransfers(token: string, ds: MockDataset, minAmountUsd: number) {
+  const now = Date.now();
+  const rows = ds.onchain
+    .filter((r) => r.token === token && Number(r.amountUsd) >= minAmountUsd)
+    .map((r) => {
+      const event: Record<string, unknown> = {
+        hash: r.hash,
+        chain: r.chain,
+        token: r.token,
+        amountUsd: Number(r.amountUsd),
+        from: r.from,
+        to: r.to,
+        blockTime: new Date(now - Number(r.minutesAgo) * 60_000).toISOString(),
+      };
+      if (r.label) event.label = r.label;
+      return event;
+    });
   return {
     windowHours: 24,
-    minAmountUsd: 1_000_000,
-    events: [
-      {
-        hash: "0xabc",
-        chain: "ethereum" as const,
-        token,
-        amountUsd: 12_500_000,
-        from: "0xexchange",
-        to: "0xcoldstorage",
-        blockTime: new Date(Date.now() - 1_800_000).toISOString(),
-        label: "exchange → cold storage",
-      },
-      {
-        hash: "0xdef",
-        chain: "ethereum" as const,
-        token,
-        amountUsd: 4_200_000,
-        from: "0xwhale",
-        to: "0xexchange",
-        blockTime: new Date(Date.now() - 5_400_000).toISOString(),
-      },
-    ],
+    minAmountUsd,
+    events: rows,
   };
 }
 
@@ -183,25 +236,37 @@ export interface MockServer {
 
 export async function startMockServer(port = 0): Promise<MockServer> {
   let llmMode: "ok" | "ratelimit" = "ok";
+  const dataset = await loadDataset();
   const server = http.createServer(async (req, res) => {
     const url = new URL(req.url ?? "/", "http://localhost");
     try {
-      if (url.pathname === "/health") return send(res, 200, { ok: true });
+      if (url.pathname === "/health") {
+        return send(res, 200, {
+          ok: true,
+          counts: {
+            tweets: dataset.tweets.length,
+            headlines: dataset.headlines.length,
+            prices: dataset.prices.length,
+            onchain: dataset.onchain.length,
+          },
+        });
+      }
       if (url.pathname === "/tweets") {
         const token = url.searchParams.get("token") ?? "ETH";
-        return send(res, 200, tweets(token));
+        return send(res, 200, tweets(token, dataset));
       }
       if (url.pathname === "/headlines") {
         const token = url.searchParams.get("token") ?? "ETH";
-        return send(res, 200, headlines(token));
+        return send(res, 200, headlines(token, dataset));
       }
       if (url.pathname === "/ohlcv") {
         const symbol = url.searchParams.get("symbol") ?? "BTCUSDT";
-        return send(res, 200, ohlcv(symbol));
+        return send(res, 200, ohlcv(symbol, dataset));
       }
       if (url.pathname === "/large-transfers") {
         const token = url.searchParams.get("token") ?? "ETH";
-        return send(res, 200, largeTransfers(token));
+        const min = Number(url.searchParams.get("min") ?? "1000000");
+        return send(res, 200, largeTransfers(token, dataset, min));
       }
       if (url.pathname === "/chat/completions") {
         if (llmMode === "ratelimit") {

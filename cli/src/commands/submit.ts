@@ -1,8 +1,8 @@
 import path from "node:path";
 import { ARCHETYPES, type ArchetypeCode } from "@foru-workshop/contracts";
-import { deploy, type DeployRequest } from "@foru-workshop/grid";
+import { buildManifest, formatHandoff } from "@foru-workshop/grid";
 import { archetypeFolder, requireConfig } from "../config.js";
-import { c, fail, heading, info, ok, warn } from "../ui.js";
+import { c, fail, heading, info, ok } from "../ui.js";
 import { testCommand } from "./test.js";
 
 export async function submitCommand(): Promise<void> {
@@ -19,34 +19,27 @@ export async function submitCommand(): Promise<void> {
     return;
   }
 
-  info("Step 2/2 — deploy to FORU Grid");
-  const entrypoint = path.join(
-    archetypeFolder(code),
-    "src/handler.ts",
-  );
-
-  const req: DeployRequest = {
+  info("Step 2/2 — hand off to OpenClaw / facilitator");
+  const folder = archetypeFolder(code);
+  const manifest = buildManifest({
     archetype: code,
     agentName: cfg.agentName,
     description: cfg.description,
-    entrypoint,
-  };
+    entrypoint: path.join(folder, "src/handler.ts"),
+    soulPath: path.join(folder, "SOUL.md"),
+  });
 
-  try {
-    const result = await deploy(req);
-    ok(`Deployed: ${c.cyan}${result.callableUrl}${c.reset}`);
-    console.log(`${c.dim}  agent ID:   ${result.agentId}${c.reset}`);
-    console.log(`${c.dim}  deployed:   ${result.deployedAt}${c.reset}`);
-    info(
-      "Copy the callable URL into your hackathon submission form, " +
-        "then ping a facilitator for the founding-team stamp.",
-    );
-  } catch (err) {
-    fail(`Grid deploy failed: ${(err as Error).message}`);
-    warn(
-      "Fallback: send this message to your OpenClaw chat:\n" +
-        `   "Wrap ${entrypoint} as a FORU Grid agent for archetype ${code}, deploy it, return the callable URL"`,
-    );
-    process.exitCode = 1;
-  }
+  ok("Your agent is ready to deploy.");
+  console.log();
+  console.log(formatHandoff(manifest));
+  console.log();
+  info("To deploy via OpenClaw, send this message to your OpenClaw chat:");
+  console.log(
+    `${c.cyan}\n   Wrap ${manifest.entrypoint} as a FORU Grid agent for archetype ${code}, ` +
+      `deploy it, and return the callable URL.\n${c.reset}`,
+  );
+  info(
+    `Or hand the manifest above to a facilitator — F1 owns A+B, ` +
+      `F2 owns C+D, F3 owns E.`,
+  );
 }

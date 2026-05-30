@@ -16,7 +16,8 @@
     "submit": "tsx cli/src/index.ts submit",
     "mocks:check": "tsx cli/src/index.ts mocks",
     "mocks:serve": "tsx scripts/mock-server.ts",
-    "test:all": "tsx scripts/test-all.ts"
+    "test:all": "tsx scripts/test-all.ts",
+    "calibrate": "tsx scripts/calibrate.ts"
   },
   "devDependencies": {
     "@types/node": "^20.11.0",

@@ -4,25 +4,50 @@
 
 | | |
 |---|---|
+| **The persona** | `SOUL.md` |
+| **The runner** | `src/brain.ts` — **deterministic** (no LLM by default) |
 | **Input** | `{ pair, thresholds: { pricePctChange, volumeMultiplier } }` |
-| **Output** | `{ alerts[], severity, evaluated: { pair, samples } }` |
-| **Primary mocks** | `mock-prices` |
+| **Output** | `{ alerts[], severity, evaluated }` |
+| **Data** | `prices` ([catalog](../../mocks/README.md)) |
 
-This archetype is **mostly deterministic** — the LLM is optional. It's the
-easiest one to land MVS on if you're behind schedule.
+This is the **easy-mode** archetype. The brain is deterministic — no LLM
+call needed — so MVS is reliable even when the LLM key has issues. Good
+pick if you're behind schedule.
 
-## Prompt recipe
+## The boilerplate works out of the box
 
+```bash
+npx foru choose D
+npx foru test
+npx foru submit
 ```
-Write the brain for the Operations Officer. Fetch 60 1m candles for the pair.
-Emit a price_spike or drawdown alert when net % change exceeds the threshold,
-and a volume_spike alert when the latest candle's volume is N× the average.
-Roll up severity to the highest alert. Match the OutputSchema in src/contract.ts.
-```
 
-## OpenClaw deploy
+## To customize — edit `SOUL.md`
 
-```
-Wrap archetypes/D-operations-officer/src/handler.ts as a FORU Grid agent for
-archetype D, deploy it, and return the callable URL.
-```
+The SOUL is mostly documentation for D (the brain doesn't read it by
+default). Edit it to describe richer alert behavior, then update
+brain.ts to match.
+
+## To customize — edit `src/brain.ts`
+
+This is where most of D's customization happens.
+
+### CodeBuddy recipes
+
+**Recipe 1 — add a moving-average crossover alert:**
+> In brain.ts, compute a 5-period and 20-period moving average over
+> the candles. Emit an alert when the 5MA crosses above the 20MA
+> (kind: "ma_cross_up") or below (kind: "ma_cross_down").
+
+**Recipe 2 — use the LLM to write the alert message:**
+> Load SOUL.md and the computed alerts into the LLM. Have the LLM
+> rewrite each alert's `message` field in the Operations Officer's
+> voice. Keep the deterministic detection logic.
+
+**Recipe 3 — add a multi-pair sweep:**
+> Change the input to accept `pairs: string[]` and evaluate each one.
+> Roll up severity across all pairs.
+
+## OpenClaw deploy recipe
+
+`npx foru submit` prints the exact message.

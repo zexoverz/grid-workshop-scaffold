@@ -1,18 +1,18 @@
 import { z } from "zod";
 
 export const TraderInputSchema = z.object({
-  pair: z.enum(["BTCUSDT", "ETHUSDT"]),
+  pair: z.string(),
   portfolio: z.object({
-    baseFreeUsd: z.number().nonnegative(),
-    positionUsd: z.number().nonnegative(),
+    baseFreeUsd: z.number(),
+    positionUsd: z.number(),
   }),
 });
 
 export const TraderOutputSchema = z.object({
-  signal: z.enum(["BUY", "HOLD", "SELL"]),
-  sizeUsd: z.number().nonnegative(),
-  reason: z.string().min(20).max(400),
-  slippageTolerancePct: z.number().min(0).max(5),
+  signal: z.string(),
+  sizeUsd: z.number(),
+  reason: z.string(),
+  slippageTolerancePct: z.number(),
 });
 
 export type TraderInput = z.infer<typeof TraderInputSchema>;

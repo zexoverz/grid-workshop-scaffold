@@ -1,22 +1,15 @@
 import { z } from "zod";
 
 export const CustomerSuccessInputSchema = z.object({
-  userMessage: z.string().min(1).max(2000),
+  userMessage: z.string(),
   userId: z.string().optional(),
-  language: z.enum(["en", "id"]).default("en"),
+  language: z.string().optional().default("en"),
 });
 
 export const CustomerSuccessOutputSchema = z.object({
-  reply: z.string().min(1).max(1200),
-  intent: z.enum([
-    "onboarding",
-    "education",
-    "troubleshooting",
-    "fees",
-    "kyc",
-    "other",
-  ]),
-  followUps: z.array(z.string().min(1).max(120)).max(5),
+  reply: z.string(),
+  intent: z.string(),
+  followUps: z.array(z.string()),
 });
 
 export type CustomerSuccessInput = z.infer<typeof CustomerSuccessInputSchema>;
