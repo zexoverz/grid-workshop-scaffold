@@ -17,7 +17,7 @@
     "mocks:check": "tsx cli/src/index.ts mocks",
     "mocks:serve": "tsx scripts/mock-server.ts",
     "test:all": "tsx scripts/test-all.ts",
-    "calibrate": "tsx scripts/calibrate.ts"
+    "calibrate": "tsx --env-file=.env scripts/calibrate.ts"
   },
   "devDependencies": {
     "@types/node": "^20.11.0",

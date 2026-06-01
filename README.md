@@ -43,19 +43,24 @@ archetypes/A-head-of-research/
 
 ## Quickstart
 
+> Full walkthrough: [`docs/getting-started.md`](./docs/getting-started.md).
+
 ```bash
-# Prereqs: Node 20 LTS, Git, a chat app for OpenClaw
+# Prereqs: Node 20+, npm
 
 npm install
 cp .env.example .env
-# fill in LLM_API_KEY (issued on workshop day)
+# Edit .env — set AGENT_RUNTIME, your LLM key, and point MOCK_*_URL at http://127.0.0.1:5599
 
-npx foru mocks       # health-check the data sources
-npx foru choose      # pick A, B, C, D, or E
-# ... open the archetype's SOUL.md, vibecode with CodeBuddy ...
-npx foru test        # validate output
-npx foru submit      # hand off to OpenClaw / facilitator
+# Terminal 1 — mock data server
+npm run mocks:serve
+
+# Terminal 2 — pick an archetype (A/B/C/D/E) and start its operator console
+cd archetypes/A-head-of-research && npm run dev
+# Open http://127.0.0.1:8080
 ```
+
+Every archetype exposes the same set of routes: `/` (operator console), `POST /invoke` (the contract endpoint), `/mcp` (MCP Streamable HTTP), `/soul`, `/health`, plus `/data` (A/C/D/E) or `/faq` (B).
 
 ## The data your agents can use
 
