@@ -17,7 +17,7 @@ const ResponseSchema = z.object({
   candles: z.array(CandleSchema),
 });
 
-export type Pair = "BTCUSDT" | "ETHUSDT";
+export type Pair = "BTCUSDT" | "ETHUSDT" | "SOLUSDT";
 
 export async function getOhlcv(
   pair: Pair,

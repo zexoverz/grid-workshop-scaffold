@@ -19,6 +19,7 @@ import { fileURLToPath } from "node:url";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { isInitializeRequest } from "@modelcontextprotocol/sdk/types.js";
 import { ARCHETYPES } from "@foru-workshop/contracts";
+import { news, onchain, prices, twitter } from "@foru-workshop/mock-clients";
 
 import { InputSchema } from "./contract.js";
 import { handle } from "./handler.js";
@@ -157,6 +158,27 @@ const server = createServer(async (req, res) => {
   }
   if (req.method === "POST" && url.pathname === "/invoke") {
     await handleInvoke(req, res);
+    return;
+  }
+  if (req.method === "GET" && url.pathname === "/data") {
+    const token = (url.searchParams.get("token") ?? "ETH").toUpperCase();
+    const supported = ["ETH", "BTC", "SOL"];
+    if (!supported.includes(token)) {
+      sendJson(res, 400, { error: `Unsupported token: ${token}` });
+      return;
+    }
+    const pair =
+      token === "BTC" ? "BTCUSDT" :
+      token === "ETH" ? "ETHUSDT" :
+      token === "SOL" ? "SOLUSDT" :
+      null;
+    const [tweets, headlines, largeTransfers, candles] = await Promise.all([
+      twitter.getRecentTweets(token as never).catch(() => []),
+      news.getRecentHeadlines(token as never).catch(() => []),
+      onchain.getLargeTransfers(token).catch(() => []),
+      pair ? prices.getOhlcv(pair as never, 60).catch(() => []) : Promise.resolve([]),
+    ]);
+    sendJson(res, 200, { token, pair, tweets, headlines, largeTransfers, candles });
     return;
   }
   if (url.pathname === "/mcp") {
