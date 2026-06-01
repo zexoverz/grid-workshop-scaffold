@@ -31,6 +31,18 @@ export function buildMcpServer(): Server {
               type: "string",
               description: "Reply language code (e.g. 'id', 'en'). Defaults to 'en'.",
             },
+            history: {
+              type: "array",
+              description: "Prior chat turns for multi-turn continuity (oldest → newest). Last 20 turns are used.",
+              items: {
+                type: "object",
+                properties: {
+                  role: { type: "string", enum: ["user", "agent"] },
+                  content: { type: "string" },
+                },
+                required: ["role", "content"],
+              },
+            },
           },
           required: ["userMessage"],
         },

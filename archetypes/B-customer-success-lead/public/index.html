@@ -6,140 +6,677 @@
     <title>Customer Success Lead — Operating Console</title>
     <style>
       :root {
-        --bg: #0b0d10; --panel: #14171c; --panel-2: #1c2026;
-        --border: #2a2f37; --text: #e7ebf0; --muted: #8a93a0;
-        --accent: #7cc4ff; --ok: #7ee787; --err: #ff7b72;
+        --bg: #0b0d10;
+        --panel: #14171c;
+        --panel-2: #1c2026;
+        --panel-3: #232831;
+        --border: #2a2f37;
+        --text: #e7ebf0;
+        --muted: #8a93a0;
+        --accent: #6A30C9;
+        --accent-hover: #7d44dc;
+        --accent-soft: rgba(106, 48, 201, 0.18);
+        --ok: #7ee787;
+        --warn: #f0b76b;
+        --err: #ff7b72;
         --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+
+        /* Intent colors */
+        --i-onboarding: #6A30C9;
+        --i-kyc:        #f0b76b;
+        --i-fees:       #f7c948;
+        --i-education:  #7ee787;
+        --i-trouble:    #ff7b72;
+        --i-other:      #8a93a0;
       }
       * { box-sizing: border-box; }
-      body { margin: 0; background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, sans-serif; line-height: 1.5; }
-      .wrap { max-width: 920px; margin: 0 auto; padding: 32px 24px 80px; }
-      header { margin-bottom: 24px; }
-      .tag { display: inline-block; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); margin-bottom: 6px; }
-      h1 { margin: 0 0 4px; font-size: 28px; font-weight: 600; }
-      .problem { color: var(--muted); font-size: 14px; margin-bottom: 16px; }
-      .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-      @media (max-width: 720px) { .grid { grid-template-columns: 1fr; } }
-      .panel { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 20px; }
-      .panel h2 { margin: 0 0 14px; font-size: 13px; font-weight: 600; color: var(--muted); letter-spacing: 0.06em; text-transform: uppercase; }
-      label { display: block; margin-bottom: 14px; font-size: 13px; color: var(--muted); }
-      input, select, textarea {
-        width: 100%; margin-top: 6px; padding: 10px 12px;
-        background: var(--panel-2); border: 1px solid var(--border); border-radius: 6px;
-        color: var(--text); font-family: var(--mono); font-size: 14px;
+      html, body { height: 100%; }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, sans-serif;
+        line-height: 1.55;
       }
-      textarea { resize: vertical; min-height: 80px; }
-      input:focus, select:focus, textarea:focus { outline: 1px solid var(--accent); border-color: var(--accent); }
-      .row { display: flex; gap: 10px; align-items: center; margin-top: 4px; }
-      button { padding: 10px 18px; background: var(--accent); color: #07101a; border: 0; border-radius: 6px; font-weight: 600; font-size: 14px; cursor: pointer; }
-      button:disabled { opacity: 0.5; cursor: not-allowed; }
-      button.ghost { background: transparent; color: var(--muted); border: 1px solid var(--border); }
-      pre { margin: 0; white-space: pre-wrap; word-break: break-word; font-family: var(--mono); font-size: 13px; color: var(--text); background: var(--panel-2); border: 1px solid var(--border); border-radius: 6px; padding: 14px; min-height: 180px; max-height: 480px; overflow: auto; }
-      .status { font-family: var(--mono); font-size: 12px; color: var(--muted); margin-top: 10px; min-height: 16px; }
-      .status.err { color: var(--err); } .status.ok { color: var(--ok); }
-      details { margin-top: 16px; }
-      details summary { cursor: pointer; color: var(--muted); font-size: 13px; padding: 8px 0; }
-      details[open] summary { color: var(--text); }
-      .soul { max-height: 380px; overflow: auto; padding: 14px; background: var(--panel-2); border: 1px solid var(--border); border-radius: 6px; font-family: var(--mono); font-size: 12.5px; white-space: pre-wrap; }
-      footer { margin-top: 32px; color: var(--muted); font-size: 12px; font-family: var(--mono); }
+      .wrap { max-width: 1180px; margin: 0 auto; padding: 28px 24px 28px; min-height: 100%; display: flex; flex-direction: column; }
+      .brand { display: flex; align-items: center; margin-bottom: 18px; }
+      .brand svg { height: 26px; width: auto; display: block; }
+      header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 22px; }
+      .h-left { flex: 1; min-width: 260px; }
+      .tag { display: inline-block; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); margin-bottom: 6px; }
+      h1 { margin: 0 0 4px; font-size: 26px; font-weight: 600; }
+      .problem { color: var(--muted); font-size: 14px; }
+      .endpoint-badge { font-family: var(--mono); font-size: 11px; color: var(--muted); }
+
+      .main-grid {
+        flex: 1;
+        display: grid;
+        grid-template-columns: 1fr 320px;
+        gap: 16px;
+        min-height: 480px;
+        /* Bounded: enough for ~6-8 messages, never the whole viewport */
+        height: min(640px, calc(100vh - 240px));
+      }
+      @media (max-width: 920px) {
+        .main-grid {
+          grid-template-columns: 1fr;
+          height: auto;
+          min-height: 0;
+        }
+        .chat-panel { height: min(560px, calc(100vh - 280px)); min-height: 440px; }
+        .knowledge-panel { max-height: 50vh; }
+      }
+
+      .panel {
+        background: var(--panel); border: 1px solid var(--border);
+        border-radius: 12px; display: flex; flex-direction: column;
+        min-height: 0;
+      }
+
+      /* —— Chat panel —— */
+      .chat-panel { overflow: hidden; }
+      .chat-header {
+        display: flex; align-items: center; gap: 12px;
+        padding: 14px 18px; border-bottom: 1px solid var(--border);
+      }
+      .chat-avatar {
+        width: 36px; height: 36px; border-radius: 999px;
+        background: linear-gradient(135deg, var(--accent), #9047EF);
+        color: white; font-weight: 700; font-size: 13px;
+        display: flex; align-items: center; justify-content: center;
+        letter-spacing: 0.04em; overflow: hidden;
+      }
+      .chat-avatar img, .avatar img {
+        width: 100%; height: 100%; object-fit: cover;
+        border-radius: inherit; display: block;
+      }
+      .chat-meta { display: flex; flex-direction: column; }
+      .chat-title { font-size: 14px; font-weight: 600; }
+      .chat-status { font-size: 11px; color: var(--ok); display: flex; align-items: center; gap: 5px; }
+      .chat-status::before {
+        content: ""; width: 6px; height: 6px; border-radius: 50%;
+        background: var(--ok);
+      }
+
+      .chat-log {
+        flex: 1; min-height: 0; overflow-y: auto;
+        padding: 18px; display: flex; flex-direction: column; gap: 14px;
+        scroll-behavior: smooth;
+      }
+      .chat-empty {
+        margin: auto 0; text-align: center; color: var(--muted);
+        padding: 28px 16px; display: flex; flex-direction: column; align-items: center; gap: 14px;
+      }
+      .chat-empty .hi {
+        font-size: 16px; color: var(--text);
+      }
+      .chat-empty .sub { font-size: 13px; }
+      .chat-empty .samples { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; }
+
+      .message { display: flex; gap: 10px; max-width: 88%; }
+      .message.user { margin-left: auto; flex-direction: row-reverse; max-width: 75%; }
+      .message-body { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+      .message.user .message-body { align-items: flex-end; }
+
+      .avatar {
+        width: 32px; height: 32px; border-radius: 999px; flex-shrink: 0;
+        background: linear-gradient(135deg, var(--accent), #9047EF);
+        color: white; font-weight: 700; font-size: 11px;
+        display: flex; align-items: center; justify-content: center;
+        letter-spacing: 0.04em; overflow: hidden;
+      }
+
+      .bubble {
+        padding: 10px 14px; border-radius: 14px;
+        font-size: 14px; line-height: 1.55;
+        white-space: pre-line; word-wrap: break-word; overflow-wrap: break-word;
+        max-width: 100%;
+      }
+      .bubble strong { font-weight: 700; }
+      .message.user .bubble {
+        background: var(--accent); color: white;
+        border-bottom-right-radius: 4px;
+      }
+      .message.agent .bubble {
+        background: var(--panel-2); color: var(--text);
+        border: 1px solid var(--border);
+        border-bottom-left-radius: 4px;
+      }
+
+      .meta {
+        display: flex; align-items: center; gap: 8px; font-size: 11px; color: var(--muted);
+      }
+      .intent-pill {
+        display: inline-flex; align-items: center; padding: 2px 9px;
+        border-radius: 999px; font-size: 10px; font-weight: 700;
+        letter-spacing: 0.05em; text-transform: uppercase;
+        background: rgba(106, 48, 201, 0.15); color: var(--accent);
+        border: 1px solid rgba(106, 48, 201, 0.35);
+      }
+      .intent-pill.onboarding { background: rgba(106,48,201,0.15); color: var(--i-onboarding); border-color: rgba(106,48,201,0.35); }
+      .intent-pill.kyc        { background: rgba(240,183,107,0.15); color: var(--i-kyc); border-color: rgba(240,183,107,0.35); }
+      .intent-pill.fees       { background: rgba(247,201,72,0.15); color: var(--i-fees); border-color: rgba(247,201,72,0.35); }
+      .intent-pill.education  { background: rgba(126,231,135,0.15); color: var(--i-education); border-color: rgba(126,231,135,0.35); }
+      .intent-pill.troubleshooting { background: rgba(255,123,114,0.15); color: var(--i-trouble); border-color: rgba(255,123,114,0.35); }
+      .intent-pill.other      { background: rgba(138,147,160,0.15); color: var(--i-other); border-color: rgba(138,147,160,0.35); }
+
+      .followups { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+      .chip {
+        padding: 6px 11px; font-size: 12px; cursor: pointer;
+        background: transparent; color: var(--text);
+        border: 1px solid var(--border); border-radius: 999px;
+        font-family: inherit; transition: background 120ms, border-color 120ms;
+      }
+      .chip:hover { background: var(--accent-soft); border-color: var(--accent); }
+      .chip:disabled { opacity: 0.5; cursor: not-allowed; }
+
+      .typing-bubble {
+        display: inline-flex; gap: 4px;
+        padding: 14px; background: var(--panel-2); border: 1px solid var(--border);
+        border-radius: 14px; border-bottom-left-radius: 4px;
+      }
+      .typing-bubble span {
+        width: 6px; height: 6px; border-radius: 50%; background: var(--muted);
+        animation: typing 1.2s infinite ease-in-out;
+      }
+      .typing-bubble span:nth-child(2) { animation-delay: 0.15s; }
+      .typing-bubble span:nth-child(3) { animation-delay: 0.3s; }
+      @keyframes typing {
+        0%,60%,100% { opacity: 0.3; transform: translateY(0); }
+        30% { opacity: 1; transform: translateY(-2px); }
+      }
+
+      .error-bubble {
+        padding: 10px 14px; border-radius: 12px;
+        background: rgba(255,123,114,0.1); border: 1px solid rgba(255,123,114,0.35);
+        color: var(--err); font-size: 13px;
+      }
+
+      /* —— Input bar —— */
+      .input-bar {
+        border-top: 1px solid var(--border); padding: 12px;
+        background: var(--panel);
+      }
+      .input-row {
+        display: flex; gap: 8px; align-items: flex-end;
+        background: var(--panel-2); border: 1px solid var(--border);
+        border-radius: 12px; padding: 6px 6px 6px 14px;
+      }
+      .input-row:focus-within { border-color: var(--accent); }
+      .input-textarea {
+        flex: 1; resize: none; border: 0; outline: 0;
+        background: transparent; color: var(--text);
+        font-family: inherit; font-size: 14px; line-height: 1.5;
+        padding: 8px 0; max-height: 140px; min-height: 22px;
+      }
+      .input-textarea::placeholder { color: var(--muted); }
+      .lang-toggle { display: flex; gap: 2px; padding: 3px; background: var(--panel-3); border-radius: 8px; align-self: center; }
+      .lang-btn {
+        padding: 5px 10px; border: 0; background: transparent; color: var(--muted);
+        font-size: 11px; font-weight: 700; cursor: pointer; border-radius: 6px;
+        letter-spacing: 0.04em; text-transform: uppercase;
+      }
+      .lang-btn.active { background: var(--accent); color: white; }
+      .send-btn {
+        width: 36px; height: 36px; border-radius: 8px; border: 0;
+        background: var(--accent); color: white; cursor: pointer;
+        display: flex; align-items: center; justify-content: center;
+        align-self: center; transition: background 120ms;
+      }
+      .send-btn:hover { background: var(--accent-hover); }
+      .send-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+      .send-btn svg { width: 16px; height: 16px; }
+
+      /* —— Knowledge panel —— */
+      .knowledge-panel { padding: 0; overflow: hidden; align-self: start; }
+      .knowledge-header {
+        padding: 14px 16px; border-bottom: 1px solid var(--border);
+        display: flex; align-items: center; justify-content: space-between;
+      }
+      .knowledge-title {
+        font-size: 12px; font-weight: 600; color: var(--muted);
+        letter-spacing: 0.06em; text-transform: uppercase;
+      }
+      .knowledge-count { font-size: 11px; color: var(--muted); font-family: var(--mono); }
+      .knowledge-body { flex: 1; min-height: 0; overflow-y: auto; padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+      .faq-card {
+        padding: 12px 14px;
+        background: var(--panel-2); border: 1px solid var(--border);
+        border-radius: 8px;
+      }
+      .faq-card .top { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+      .faq-q { font-size: 13px; font-weight: 600; color: var(--text); margin: 0 0 6px; }
+      .faq-a { font-size: 12.5px; color: var(--muted); line-height: 1.55; }
+      .knowledge-pagination {
+        padding: 10px 14px; border-top: 1px solid var(--border);
+        display: flex; align-items: center; justify-content: space-between; gap: 8px;
+      }
+      .knowledge-pagination button {
+        padding: 6px 10px;
+        background: transparent; color: var(--text);
+        border: 1px solid var(--border); border-radius: 6px;
+        font-size: 12px; cursor: pointer; font-family: inherit;
+        transition: background 120ms, border-color 120ms, color 120ms;
+      }
+      .knowledge-pagination button:hover:not(:disabled) {
+        background: var(--accent-soft); border-color: var(--accent); color: var(--text);
+      }
+      .knowledge-pagination button:disabled {
+        opacity: 0.35; cursor: not-allowed;
+      }
+      .faq-page-label {
+        font-size: 11px; color: var(--muted); font-family: var(--mono);
+      }
+      .knowledge-foot {
+        padding: 10px 14px; border-top: 1px solid var(--border);
+        font-size: 11px; color: var(--muted); font-family: var(--mono);
+      }
+
+      details.soul { margin-top: 16px; }
+      details.soul summary { cursor: pointer; color: var(--muted); font-size: 13px; padding: 8px 0; }
+      details.soul[open] summary { color: var(--text); }
+      .soul-body {
+        margin-top: 8px; max-height: 320px; overflow: auto; padding: 14px;
+        background: var(--panel); border: 1px solid var(--border); border-radius: 8px;
+        font-family: var(--mono); font-size: 12.5px; white-space: pre-wrap;
+      }
+      footer { margin-top: 18px; color: var(--muted); font-size: 12px; font-family: var(--mono); }
     </style>
   </head>
   <body>
     <main class="wrap">
+      <div class="brand" aria-label="FORU">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 104 24" fill="none">
+          <path fill="url(#foru_svg__a)" d="M15.324 6.315q-2.742 4.679-5.486 9.356a1.425 1.425 0 0 0 1.23 2.146h9.314c.514 0 .99.272 1.25.715a1.348 1.348 0 0 1-1.16 2.033l-14.105.012a1.516 1.516 0 0 1-1.307-2.284l9.403-15.975c.3-.51.3-1.14-.001-1.65a1.36 1.36 0 0 0-2.348.008L.22 21.079a1.6 1.6 0 0 0 1.386 2.406l23.922-.034a1.34 1.34 0 0 0 1.151-2.021L17.73 6.31a1.396 1.396 0 0 0-2.405.004zm-1.303 7.809q1.027-1.73 2.057-3.459a.53.53 0 0 1 .912.002l2.015 3.436a.52.52 0 0 1-.45.784l-4.108-.011a.498.498 0 0 1-.426-.753"/>
+          <g fill="#fff">
+            <path d="M43.603 5.842c-.236-.231-.552-.349-.935-.352L32.36 5.425h-.01c-.365 0-.678.122-.93.363q-.385.37-.39.95l-.096 15.441c-.003.37.124.688.375.943.252.254.568.386.938.388h.01c.366 0 .68-.127.933-.376.254-.251.386-.568.388-.938l.041-6.57 6.41.04h.012q.57 0 .93-.34a1.18 1.18 0 0 0 .365-.881 1.18 1.18 0 0 0-.356-.888c-.236-.23-.552-.349-.935-.352l-6.41-.04.033-5.271 8.986.056c.384 0 .7-.108.938-.326q.364-.335.368-.873c.002-.372-.118-.678-.356-.91zM103.17.505a.63.63 0 0 0-.499-.229.63.63 0 0 0-.499.23.75.75 0 0 0-.156.487V4.57q0 .287.151.479c.12.152.3.237.504.237a.63.63 0 0 0 .51-.244.76.76 0 0 0 .145-.473V.992a.75.75 0 0 0-.156-.488zM99.184.448a.62.62 0 0 0-.556-.277.64.64 0 0 0-.47.28l-2.34 3.99a.66.66 0 0 0 .018.601c.166.287.482.314.507.316h3.974l.738-.009a.58.58 0 0 0 .506-.302l.01-.02a.66.66 0 0 0 .02-.511L99.184.449zm.352 3.658q-.877-.001-1.752-.004a.212.212 0 0 1-.182-.321l.877-1.476a.226.226 0 0 1 .39 0l.859 1.467a.222.222 0 0 1-.192.334M59.496 7.929a8.7 8.7 0 0 0-2.908-1.923c-1.114-.453-2.363-.683-3.711-.683-1.349 0-2.602.23-3.723.683a8.5 8.5 0 0 0-2.908 1.924 8.8 8.8 0 0 0-1.888 2.93c-.445 1.121-.67 2.373-.67 3.723s.225 2.606.67 3.733a8.7 8.7 0 0 0 1.889 2.942 8.5 8.5 0 0 0 2.907 1.924c1.122.453 2.374.683 3.723.683s2.597-.23 3.711-.683a8.7 8.7 0 0 0 2.908-1.923 8.7 8.7 0 0 0 1.9-2.943c.446-1.128.672-2.385.672-3.733s-.226-2.6-.671-3.723a8.7 8.7 0 0 0-1.9-2.93zm-6.619 13.518c-.966 0-1.865-.177-2.671-.526a6.3 6.3 0 0 1-2.1-1.451 6.7 6.7 0 0 1-1.374-2.18 7.4 7.4 0 0 1-.492-2.71c0-.968.166-1.879.492-2.711a6.7 6.7 0 0 1 1.375-2.18 6.2 6.2 0 0 1 2.098-1.44c.807-.34 1.707-.513 2.672-.513s1.865.173 2.672.514a6.3 6.3 0 0 1 2.11 1.44 6.4 6.4 0 0 1 1.374 2.178c.32.832.481 1.744.481 2.71s-.161 1.88-.481 2.712a6.4 6.4 0 0 1-1.373 2.177 6.5 6.5 0 0 1-2.112 1.452c-.808.348-1.706.525-2.671.525zM74.13 16.125l.112-.055a5.3 5.3 0 0 0 2.117-1.943c.505-.824.762-1.777.762-2.83 0-1.129-.256-2.134-.761-2.99a5.4 5.4 0 0 0-2.116-2.022c-.898-.488-1.94-.735-3.099-.735H67.04q-.555.001-.938.37c-.254.245-.383.566-.383.952v15.44c0 .37.128.687.381.94q.383.382.94.382c.37 0 .707-.129.953-.384.244-.253.369-.568.369-.937v-5.544h2.783q.176 0 .347-.006l3.872 6.236q.201.328.498.483.291.151.644.152.812-.001 1.147-.656c.22-.43.18-.894-.12-1.377zm.437-4.828c0 .579-.146 1.102-.435 1.558a2.96 2.96 0 0 1-1.2 1.07c-.511.255-1.112.384-1.787.384h-2.783V8.012h2.783c.672 0 1.273.14 1.783.417.507.276.912.665 1.203 1.158.29.494.437 1.07.437 1.71M94.96 5.923q-.36-.372-.941-.373c-.386 0-.685.125-.938.37-.255.245-.384.566-.384.952v10.651c0 .79-.203 1.498-.605 2.103-.402.608-.968 1.09-1.68 1.435-.715.346-1.55.522-2.483.522-.932 0-1.831-.176-2.577-.522-.742-.345-1.33-.828-1.747-1.436-.415-.605-.626-1.312-.626-2.102V6.872c0-.385-.124-.706-.37-.951-.246-.246-.567-.37-.951-.37a1.28 1.28 0 0 0-.938.368c-.255.246-.384.567-.384.953v10.651c0 1.253.326 2.383.97 3.36.641.974 1.546 1.746 2.688 2.294 1.14.546 2.463.823 3.936.823s2.714-.277 3.823-.823c1.112-.548 1.994-1.321 2.62-2.296.627-.976.946-2.106.946-3.358V6.872q0-.58-.358-.95z"/>
+          </g>
+          <defs>
+            <linearGradient id="foru_svg__a" x1="0" x2="26.868" y1="11.743" y2="11.743" gradientUnits="userSpaceOnUse">
+              <stop stop-color="#3E198B"/>
+              <stop offset="0.37" stop-color="#9047EF"/>
+              <stop offset="0.82" stop-color="#DD99F8"/>
+              <stop offset="1" stop-color="#F7CAFB"/>
+            </linearGradient>
+          </defs>
+        </svg>
+      </div>
+
       <header>
-        <div class="tag">Archetype B</div>
-        <h1>Customer Success Lead</h1>
-        <div class="problem">P2 — Trader experience</div>
+        <div class="h-left">
+          <div class="tag">Archetype B</div>
+          <h1>Customer Success Lead</h1>
+          <div class="problem">P2 — Trader experience</div>
+        </div>
+        <div class="endpoint-badge" id="health-badge">● connecting…</div>
       </header>
 
-      <section class="grid">
-        <div class="panel">
-          <h2>Input</h2>
-          <form id="run-form">
-            <label>
-              User message
-              <textarea id="userMessage" rows="4" placeholder="Type the trader's question…">Saya pemula. Bagaimana cara mulai trading di Indodax?</textarea>
-            </label>
-            <label>
-              Language
-              <select id="language">
-                <option value="id">id (Bahasa Indonesia)</option>
-                <option value="en">en (English)</option>
-              </select>
-            </label>
-            <div class="row">
-              <button id="run-btn" type="submit">Run</button>
-              <button id="sample-btn" type="button" class="ghost">Sample</button>
+      <div class="main-grid">
+        <div class="panel chat-panel">
+          <div class="chat-header">
+            <div class="chat-avatar"><img src="https://academy-public.coinmarketcap.com/optimized-uploads/10f37054b5d2471fa4d9d0a8e524f8b8.jpeg" alt="CS" /></div>
+            <div class="chat-meta">
+              <div class="chat-title">Customer Success Lead</div>
+              <div class="chat-status">Online · grounded in 5 FAQ entries</div>
             </div>
-            <div id="status" class="status"></div>
-          </form>
+          </div>
+
+          <div class="chat-log" id="chat-log">
+            <div class="chat-empty" id="chat-empty">
+              <div class="chat-avatar" style="width:56px;height:56px;font-size:18px;"><img src="https://academy-public.coinmarketcap.com/optimized-uploads/10f37054b5d2471fa4d9d0a8e524f8b8.jpeg" alt="CS" /></div>
+              <div>
+                <div class="hi">Halo — saya Customer Success Lead.</div>
+                <div class="sub">Tanya saya soal Indodax, KYC, fees, atau cara mulai trading.</div>
+              </div>
+              <div class="samples">
+                <button class="chip" data-sample="Saya pemula. Bagaimana cara mulai trading di Indodax?">Cara mulai trading</button>
+                <button class="chip" data-sample="Dokumen apa saja yang dibutuhkan untuk KYC?">Dokumen KYC</button>
+                <button class="chip" data-sample="What's the difference between market and limit orders?" data-lang="en">Market vs limit (EN)</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="input-bar">
+            <div class="input-row">
+              <textarea id="input" class="input-textarea" placeholder="Tanya sesuatu… (Shift+Enter for newline)" rows="1"></textarea>
+              <div class="lang-toggle">
+                <button class="lang-btn active" data-lang="id" type="button">ID</button>
+                <button class="lang-btn" data-lang="en" type="button">EN</button>
+              </div>
+              <button class="send-btn" id="send-btn" type="button" aria-label="Send">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="22" y1="2" x2="11" y2="13"/>
+                  <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                </svg>
+              </button>
+            </div>
+          </div>
         </div>
 
-        <div class="panel">
-          <h2>Output</h2>
-          <pre id="output">// reply / intent / followUps</pre>
-        </div>
-      </section>
+        <aside class="panel knowledge-panel">
+          <div class="knowledge-header">
+            <span class="knowledge-title">Knowledge in scope</span>
+            <span class="knowledge-count" id="faq-count">—</span>
+          </div>
+          <div class="knowledge-body" id="faq-list">
+            <div style="color: var(--muted); font-size: 13px; padding: 14px 0;">loading FAQ…</div>
+          </div>
+          <div class="knowledge-pagination">
+            <button id="faq-prev" type="button">‹ Prev</button>
+            <span class="faq-page-label" id="faq-page-label">—</span>
+            <button id="faq-next" type="button">Next ›</button>
+          </div>
+          <div class="knowledge-foot">SOUL forbids fees, rules, or features not in this list.</div>
+        </aside>
+      </div>
 
-      <details>
+      <details class="soul">
         <summary>View SOUL (the persona running this agent)</summary>
-        <div class="soul" id="soul">loading…</div>
+        <div class="soul-body" id="soul">loading…</div>
       </details>
 
       <footer>
-        Endpoints — <code>POST /invoke</code> · <code>/mcp</code> · <code>GET /soul</code> · <code>GET /health</code>
+        Endpoints —
+        <code>POST /invoke</code> ·
+        <code>GET /faq</code> ·
+        <code>/mcp</code> ·
+        <code>GET /soul</code> ·
+        <code>GET /health</code>
+        &nbsp;·&nbsp;
+        Multi-turn — the agent reads up to 20 prior turns from this chat.
       </footer>
     </main>
 
     <script>
       const $ = (id) => document.getElementById(id);
-      const form = $("run-form");
-      const status = $("status");
-      const output = $("output");
-      const runBtn = $("run-btn");
 
-      function setStatus(text, kind) {
-        status.textContent = text;
-        status.className = "status" + (kind ? " " + kind : "");
+      const AGENT_PFP_URL = "https://academy-public.coinmarketcap.com/optimized-uploads/10f37054b5d2471fa4d9d0a8e524f8b8.jpeg";
+
+      const state = {
+        language: "id",
+        pending: false,
+        history: [],  // [{ role: "user" | "agent", content }] — sent with each /invoke
+      };
+
+      function makeAvatar() {
+        const div = document.createElement("div");
+        div.className = "avatar";
+        const img = document.createElement("img");
+        img.src = AGENT_PFP_URL;
+        img.alt = "CS";
+        div.appendChild(img);
+        return div;
       }
 
-      async function invoke() {
-        const payload = {
-          userMessage: $("userMessage").value.trim(),
-          language: $("language").value,
-        };
-        runBtn.disabled = true;
-        setStatus("Running…");
-        const t0 = performance.now();
+      const log = $("chat-log");
+      const empty = $("chat-empty");
+      const input = $("input");
+      const sendBtn = $("send-btn");
+
+      // —— Language toggle ——
+      for (const btn of document.querySelectorAll(".lang-btn")) {
+        btn.addEventListener("click", () => {
+          for (const b of document.querySelectorAll(".lang-btn")) b.classList.remove("active");
+          btn.classList.add("active");
+          state.language = btn.dataset.lang;
+          input.placeholder = state.language === "id"
+            ? "Tanya sesuatu… (Shift+Enter for newline)"
+            : "Ask anything… (Shift+Enter for newline)";
+        });
+      }
+
+      // —— Sample chips on empty state ——
+      empty.addEventListener("click", (e) => {
+        const btn = e.target.closest("button[data-sample]");
+        if (!btn) return;
+        if (btn.dataset.lang) {
+          for (const b of document.querySelectorAll(".lang-btn")) b.classList.remove("active");
+          document.querySelector(`.lang-btn[data-lang="${btn.dataset.lang}"]`).classList.add("active");
+          state.language = btn.dataset.lang;
+        }
+        input.value = btn.dataset.sample;
+        send();
+      });
+
+      // —— Auto-grow textarea ——
+      input.addEventListener("input", () => {
+        input.style.height = "auto";
+        input.style.height = Math.min(140, input.scrollHeight) + "px";
+      });
+
+      // —— Send on Enter (Shift+Enter for newline) ——
+      input.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" && !e.shiftKey) {
+          e.preventDefault();
+          send();
+        }
+      });
+
+      sendBtn.addEventListener("click", send);
+
+      // —— Rendering ——
+      function escapeHtml(s) {
+        return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+      }
+      function renderMarkdown(s) {
+        // Minimal: escape, then convert **bold**
+        return escapeHtml(s).replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
+      }
+      function intentClass(intent) {
+        const i = String(intent || "other").toLowerCase();
+        if (["onboarding","kyc","fees","education","troubleshooting","other"].includes(i)) return i;
+        return "other";
+      }
+      function ensureEmptyHidden() {
+        if (empty.parentElement === log) log.removeChild(empty);
+      }
+      function scrollToBottom() {
+        log.scrollTop = log.scrollHeight;
+      }
+
+      function appendUserMessage(text) {
+        ensureEmptyHidden();
+        const wrap = document.createElement("div");
+        wrap.className = "message user";
+        const body = document.createElement("div");
+        body.className = "message-body";
+        const bubble = document.createElement("div");
+        bubble.className = "bubble";
+        bubble.textContent = text;
+        body.appendChild(bubble);
+        wrap.appendChild(body);
+        log.appendChild(wrap);
+        scrollToBottom();
+      }
+
+      function appendTyping() {
+        const wrap = document.createElement("div");
+        wrap.className = "message agent";
+        wrap.id = "typing-indicator";
+        const body = document.createElement("div");
+        body.className = "message-body";
+        const bubble = document.createElement("div");
+        bubble.className = "typing-bubble";
+        bubble.innerHTML = "<span></span><span></span><span></span>";
+        body.appendChild(bubble);
+        wrap.appendChild(makeAvatar());
+        wrap.appendChild(body);
+        log.appendChild(wrap);
+        scrollToBottom();
+      }
+      function removeTyping() {
+        const t = $("typing-indicator");
+        if (t) t.remove();
+      }
+
+      function appendAgentReply(reply, intent, followUps) {
+        const wrap = document.createElement("div");
+        wrap.className = "message agent";
+        wrap.appendChild(makeAvatar());
+
+        const body = document.createElement("div");
+        body.className = "message-body";
+
+        const bubble = document.createElement("div");
+        bubble.className = "bubble";
+        bubble.innerHTML = renderMarkdown(reply ?? "");
+        body.appendChild(bubble);
+
+        const meta = document.createElement("div");
+        meta.className = "meta";
+        const pill = document.createElement("span");
+        pill.className = "intent-pill " + intentClass(intent);
+        pill.textContent = intent ?? "other";
+        meta.appendChild(pill);
+        body.appendChild(meta);
+
+        if (Array.isArray(followUps) && followUps.length > 0) {
+          const ups = document.createElement("div");
+          ups.className = "followups";
+          for (const f of followUps) {
+            const btn = document.createElement("button");
+            btn.className = "chip";
+            btn.textContent = f;
+            btn.addEventListener("click", () => {
+              input.value = f;
+              input.focus();
+              send();
+            });
+            ups.appendChild(btn);
+          }
+          body.appendChild(ups);
+        }
+
+        wrap.appendChild(body);
+        log.appendChild(wrap);
+        scrollToBottom();
+      }
+
+      function appendError(message) {
+        const wrap = document.createElement("div");
+        wrap.className = "message agent";
+        wrap.appendChild(makeAvatar());
+        const body = document.createElement("div");
+        body.className = "message-body";
+        const err = document.createElement("div");
+        err.className = "error-bubble";
+        err.textContent = message;
+        body.appendChild(err);
+        wrap.appendChild(body);
+        log.appendChild(wrap);
+        scrollToBottom();
+      }
+
+      // —— Send ——
+      async function send() {
+        if (state.pending) return;
+        const text = input.value.trim();
+        if (!text) return;
+        state.pending = true;
+        sendBtn.disabled = true;
+        input.disabled = true;
+
+        appendUserMessage(text);
+        input.value = "";
+        input.style.height = "auto";
+        appendTyping();
+
         try {
           const res = await fetch("/invoke", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload),
+            body: JSON.stringify({
+              userMessage: text,
+              language: state.language,
+              history: state.history.slice(),  // prior turns, oldest → newest
+            }),
           });
           const body = await res.json();
-          output.textContent = JSON.stringify(body, null, 2);
-          const dur = Math.round(performance.now() - t0);
-          if (!res.ok) setStatus(`HTTP ${res.status} (${dur}ms)`, "err");
-          else setStatus(`200 OK in ${dur}ms`, "ok");
+          removeTyping();
+          if (!res.ok) {
+            appendError(body.error ?? `HTTP ${res.status}`);
+          } else {
+            appendAgentReply(body.reply, body.intent, body.followUps);
+            // Commit this exchange to history so the next /invoke sees it
+            state.history.push({ role: "user", content: text });
+            state.history.push({ role: "agent", content: body.reply ?? "" });
+          }
         } catch (err) {
-          output.textContent = String(err);
-          setStatus("Network error", "err");
+          removeTyping();
+          appendError(String(err));
         } finally {
-          runBtn.disabled = false;
+          state.pending = false;
+          sendBtn.disabled = false;
+          input.disabled = false;
+          input.focus();
         }
       }
 
-      form.addEventListener("submit", (e) => { e.preventDefault(); invoke(); });
-      $("sample-btn").addEventListener("click", () => {
-        $("userMessage").value = "Saya pemula. Bagaimana cara mulai trading di Indodax?";
-        $("language").value = "id";
-        invoke();
+      // —— Boot: load FAQ + health + SOUL ——
+      const FAQ_PAGE_SIZE = 4;
+      const faqState = { entries: [], page: 1 };
+
+      function renderFaq(entries) {
+        faqState.entries = entries;
+        faqState.page = 1;
+        drawFaqPage();
+      }
+
+      function drawFaqPage() {
+        const list = $("faq-list");
+        list.innerHTML = "";
+        const total = faqState.entries.length;
+        const totalPages = Math.max(1, Math.ceil(total / FAQ_PAGE_SIZE));
+        if (faqState.page > totalPages) faqState.page = totalPages;
+        const start = (faqState.page - 1) * FAQ_PAGE_SIZE;
+        const slice = faqState.entries.slice(start, start + FAQ_PAGE_SIZE);
+        for (const e of slice) {
+          const card = document.createElement("div");
+          card.className = "faq-card";
+          const top = document.createElement("div");
+          top.className = "top";
+          const pill = document.createElement("span");
+          pill.className = "intent-pill " + intentClass(e.intent);
+          pill.textContent = e.intent;
+          top.appendChild(pill);
+          card.appendChild(top);
+          const q = document.createElement("div");
+          q.className = "faq-q";
+          q.textContent = e.question;
+          card.appendChild(q);
+          const a = document.createElement("div");
+          a.className = "faq-a";
+          a.textContent = e.answer;
+          card.appendChild(a);
+          list.appendChild(card);
+        }
+        $("faq-count").textContent = `${total} entries`;
+        $("faq-page-label").textContent = `Page ${faqState.page} of ${totalPages}`;
+        $("faq-prev").disabled = faqState.page <= 1;
+        $("faq-next").disabled = faqState.page >= totalPages;
+      }
+
+      $("faq-prev").addEventListener("click", () => {
+        if (faqState.page > 1) { faqState.page--; drawFaqPage(); }
       });
+      $("faq-next").addEventListener("click", () => {
+        const totalPages = Math.ceil(faqState.entries.length / FAQ_PAGE_SIZE);
+        if (faqState.page < totalPages) { faqState.page++; drawFaqPage(); }
+      });
+
+      fetch("/faq").then((r) => r.json())
+        .then((j) => renderFaq(j.entries || []))
+        .catch(() => ($("faq-list").innerHTML = '<div style="color: var(--err); font-size: 13px;">Failed to load FAQ</div>'));
+
+      fetch("/health").then((r) => r.json())
+        .then((j) => ($("health-badge").innerHTML = `<span style="color: var(--ok)">●</span> ${j.role}`))
+        .catch(() => ($("health-badge").innerHTML = '<span style="color: var(--err)">●</span> offline'));
 
       fetch("/soul").then((r) => r.text())
         .then((t) => ($("soul").textContent = t))
         .catch(() => ($("soul").textContent = "(failed to load SOUL.md)"));
+
+      input.focus();
     </script>
   </body>
 </html>

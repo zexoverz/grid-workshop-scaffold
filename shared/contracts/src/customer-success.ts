@@ -1,9 +1,16 @@
 import { z } from "zod";
 
+export const CustomerSuccessHistoryTurnSchema = z.object({
+  role: z.enum(["user", "agent"]),
+  content: z.string(),
+});
+export type CustomerSuccessHistoryTurn = z.infer<typeof CustomerSuccessHistoryTurnSchema>;
+
 export const CustomerSuccessInputSchema = z.object({
   userMessage: z.string(),
   userId: z.string().optional(),
   language: z.string().optional().default("en"),
+  history: z.array(CustomerSuccessHistoryTurnSchema).optional().default([]),
 });
 
 export const CustomerSuccessOutputSchema = z.object({

@@ -16,6 +16,7 @@ import { isInitializeRequest } from "@modelcontextprotocol/sdk/types.js";
 import { ARCHETYPES } from "@foru-workshop/contracts";
 
 import { InputSchema } from "./contract.js";
+import { FAQ } from "./faq.js";
 import { handle } from "./handler.js";
 import { buildMcpServer } from "./mcp.js";
 
@@ -146,6 +147,10 @@ const server = createServer(async (req, res) => {
   }
   if (req.method === "POST" && url.pathname === "/invoke") {
     await handleInvoke(req, res);
+    return;
+  }
+  if (req.method === "GET" && url.pathname === "/faq") {
+    sendJson(res, 200, { entries: FAQ });
     return;
   }
   if (url.pathname === "/mcp") {
