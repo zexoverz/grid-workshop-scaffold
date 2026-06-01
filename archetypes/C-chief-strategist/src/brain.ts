@@ -20,8 +20,12 @@ import { fallback } from "./fallback.js";
 export async function brain(input: Input): Promise<Output> {
   const soul = await loadSoul(import.meta.url);
 
-  const pair = input.pair as "BTCUSDT" | "ETHUSDT";
-  const token = pair === "BTCUSDT" ? "BTC" : "ETH";
+  const pair = input.pair as "BTCUSDT" | "ETHUSDT" | "SOLUSDT";
+  const token =
+    pair === "BTCUSDT" ? "BTC" :
+    pair === "ETHUSDT" ? "ETH" :
+    pair === "SOLUSDT" ? "SOL" :
+    "ETH";
   const [candles, largeTx] = await Promise.all([
     prices.getOhlcv(pair, 60),
     onchain.getLargeTransfers(token).catch(() => []),

@@ -14,6 +14,7 @@ import { fileURLToPath } from "node:url";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { isInitializeRequest } from "@modelcontextprotocol/sdk/types.js";
 import { ARCHETYPES } from "@foru-workshop/contracts";
+import { onchain, prices } from "@foru-workshop/mock-clients";
 
 import { InputSchema } from "./contract.js";
 import { handle } from "./handler.js";
@@ -146,6 +147,21 @@ const server = createServer(async (req, res) => {
   }
   if (req.method === "POST" && url.pathname === "/invoke") {
     await handleInvoke(req, res);
+    return;
+  }
+  if (req.method === "GET" && url.pathname === "/data") {
+    const pair = (url.searchParams.get("pair") ?? "ETHUSDT").toUpperCase();
+    const supported = ["BTCUSDT", "ETHUSDT", "SOLUSDT"];
+    if (!supported.includes(pair)) {
+      sendJson(res, 400, { error: `Unsupported pair: ${pair}` });
+      return;
+    }
+    const token = pair === "BTCUSDT" ? "BTC" : pair === "ETHUSDT" ? "ETH" : "SOL";
+    const [candles, largeTransfers] = await Promise.all([
+      prices.getOhlcv(pair as never, 60).catch(() => []),
+      onchain.getLargeTransfers(token).catch(() => []),
+    ]);
+    sendJson(res, 200, { pair, token, candles, largeTransfers });
     return;
   }
   if (url.pathname === "/mcp") {
