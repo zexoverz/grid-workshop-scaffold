@@ -6,139 +6,653 @@
     <title>Head Trader — Operating Console</title>
     <style>
       :root {
-        --bg: #0b0d10; --panel: #14171c; --panel-2: #1c2026;
-        --border: #2a2f37; --text: #e7ebf0; --muted: #8a93a0;
-        --accent: #7cc4ff; --ok: #7ee787; --err: #ff7b72;
+        --bg: #0b0d10;
+        --panel: #14171c;
+        --panel-2: #1c2026;
+        --panel-3: #232831;
+        --border: #2a2f37;
+        --text: #e7ebf0;
+        --muted: #8a93a0;
+        --accent: #6A30C9;
+        --accent-hover: #7d44dc;
+        --accent-soft: rgba(106, 48, 201, 0.18);
+        --ok: #7ee787;
+        --warn: #f0b76b;
+        --err: #ff7b72;
         --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
       }
       * { box-sizing: border-box; }
-      body { margin: 0; background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, sans-serif; line-height: 1.5; }
-      .wrap { max-width: 920px; margin: 0 auto; padding: 32px 24px 80px; }
-      header { margin-bottom: 24px; }
+      body {
+        margin: 0; background: var(--bg); color: var(--text);
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, sans-serif;
+        line-height: 1.55;
+      }
+      .wrap { max-width: 1180px; margin: 0 auto; padding: 32px 24px 80px; }
+      .brand { display: flex; align-items: center; margin-bottom: 22px; }
+      .brand svg { height: 26px; width: auto; display: block; }
+      header { margin-bottom: 28px; display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+      .h-left { flex: 1; min-width: 260px; }
       .tag { display: inline-block; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); margin-bottom: 6px; }
       h1 { margin: 0 0 4px; font-size: 28px; font-weight: 600; }
-      .problem { color: var(--muted); font-size: 14px; margin-bottom: 16px; }
-      .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-      @media (max-width: 720px) { .grid { grid-template-columns: 1fr; } }
-      .panel { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 20px; }
-      .panel h2 { margin: 0 0 14px; font-size: 13px; font-weight: 600; color: var(--muted); letter-spacing: 0.06em; text-transform: uppercase; }
-      label { display: block; margin-bottom: 14px; font-size: 13px; color: var(--muted); }
-      input, select { width: 100%; margin-top: 6px; padding: 10px 12px; background: var(--panel-2); border: 1px solid var(--border); border-radius: 6px; color: var(--text); font-family: var(--mono); font-size: 14px; }
-      input:focus, select:focus { outline: 1px solid var(--accent); border-color: var(--accent); }
-      .row { display: flex; gap: 10px; align-items: center; margin-top: 4px; }
-      button { padding: 10px 18px; background: var(--accent); color: #07101a; border: 0; border-radius: 6px; font-weight: 600; font-size: 14px; cursor: pointer; }
-      button:disabled { opacity: 0.5; cursor: not-allowed; }
-      button.ghost { background: transparent; color: var(--muted); border: 1px solid var(--border); }
-      pre { margin: 0; white-space: pre-wrap; word-break: break-word; font-family: var(--mono); font-size: 13px; color: var(--text); background: var(--panel-2); border: 1px solid var(--border); border-radius: 6px; padding: 14px; min-height: 180px; max-height: 480px; overflow: auto; }
-      .status { font-family: var(--mono); font-size: 12px; color: var(--muted); margin-top: 10px; min-height: 16px; }
+      .problem { color: var(--muted); font-size: 14px; }
+      .endpoint-badge { font-family: var(--mono); font-size: 11px; color: var(--muted); }
+
+      .panel { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
+      .panel-title { font-size: 12px; font-weight: 600; color: var(--muted); letter-spacing: 0.06em; text-transform: uppercase; margin: 0 0 14px; }
+
+      .input-row {
+        display: grid; grid-template-columns: auto auto auto 1fr;
+        gap: 14px; align-items: end;
+      }
+      @media (max-width: 980px) { .input-row { grid-template-columns: 1fr; } }
+      .field-label { font-size: 11px; font-weight: 600; color: var(--muted); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }
+      .field-label svg { width: 12px; height: 12px; opacity: 0.7; }
+
+      .seg-picker { display: flex; gap: 4px; padding: 4px; background: var(--panel-2); border: 1px solid var(--border); border-radius: 10px; }
+      .seg-btn {
+        padding: 8px 12px; border: 0; background: transparent; cursor: pointer;
+        color: var(--muted); font-weight: 600; font-size: 13px;
+        border-radius: 7px; transition: background 120ms, color 120ms; font-family: var(--mono);
+        display: flex; align-items: center; gap: 8px;
+      }
+      .seg-btn:hover { color: var(--text); background: var(--panel-3); }
+      .seg-btn.active { background: var(--accent); color: white; }
+      .seg-btn svg { width: 18px; height: 18px; flex-shrink: 0; }
+
+      .num-input {
+        display: flex; align-items: center; background: var(--panel-2); border: 1px solid var(--border);
+        border-radius: 10px; padding: 4px 4px 4px 14px; height: 44px;
+      }
+      .num-input .prefix { color: var(--muted); font-size: 13px; font-family: var(--mono); margin-right: 4px; }
+      .num-input input {
+        flex: 1; min-width: 0; width: 100px;
+        background: transparent; border: 0; outline: 0;
+        color: var(--text); font-family: var(--mono); font-size: 14px; font-weight: 600;
+      }
+      .num-input .stack { display: flex; flex-direction: column; gap: 2px; margin-left: 4px; }
+      .num-input .stack button { width: 24px; height: 14px; padding: 0; border: 0; background: var(--panel-3); color: var(--muted); cursor: pointer; border-radius: 4px; font-size: 9px; line-height: 1; }
+      .num-input .stack button:hover { background: var(--accent-soft); color: var(--text); }
+
+      .run-area { display: flex; justify-content: flex-end; align-items: end; }
+      @media (max-width: 980px) { .run-area { justify-content: flex-start; } }
+      button.primary {
+        padding: 11px 22px; background: var(--accent); color: white; border: 0;
+        border-radius: 8px; font-weight: 600; font-size: 14px; cursor: pointer;
+        transition: background 120ms;
+      }
+      button.primary:hover { background: var(--accent-hover); }
+      button.primary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+      .status { font-family: var(--mono); font-size: 12px; color: var(--muted); margin-top: 12px; min-height: 16px; }
       .status.err { color: var(--err); } .status.ok { color: var(--ok); }
-      details { margin-top: 16px; }
-      details summary { cursor: pointer; color: var(--muted); font-size: 13px; padding: 8px 0; }
-      details[open] summary { color: var(--text); }
-      .soul { max-height: 380px; overflow: auto; padding: 14px; background: var(--panel-2); border: 1px solid var(--border); border-radius: 6px; font-family: var(--mono); font-size: 12.5px; white-space: pre-wrap; }
+
+      /* —— Result —— */
+      .empty {
+        color: var(--muted); font-size: 14px; padding: 64px 16px; text-align: center;
+        background: var(--panel-2); border: 1px dashed var(--border); border-radius: 8px;
+      }
+      .loading {
+        color: var(--muted); font-size: 14px; padding: 64px 16px; text-align: center;
+        background: var(--panel-2); border: 1px solid var(--border); border-radius: 8px;
+      }
+      .loading::after {
+        content: ""; display: inline-block; width: 6px; height: 6px;
+        margin-left: 6px; border-radius: 50%; background: var(--accent);
+        animation: pulse 1.2s infinite ease-in-out;
+      }
+      @keyframes pulse { 0%,100% { opacity: 0.3; } 50% { opacity: 1; } }
+      .result { display: none; }
+      .result.show { display: block; }
+
+      /* —— Trade ticket —— */
+      .ticket {
+        background: var(--panel); border: 1px solid var(--border); border-radius: 12px;
+        padding: 0; overflow: hidden; margin-bottom: 16px;
+      }
+      .ticket-head {
+        display: grid; grid-template-columns: auto 1fr auto; gap: 18px; align-items: center;
+        padding: 22px 24px; border-bottom: 1px solid var(--border);
+      }
+      .signal-chip {
+        font-family: var(--mono); font-size: 26px; font-weight: 800;
+        padding: 10px 22px; border-radius: 10px; letter-spacing: 0.06em;
+      }
+      .signal-chip.buy  { background: rgba(126,231,135,0.15); color: var(--ok); border: 1.5px solid rgba(126,231,135,0.5); }
+      .signal-chip.hold { background: rgba(138,147,160,0.15); color: var(--muted); border: 1.5px solid rgba(138,147,160,0.5); }
+      .signal-chip.sell { background: rgba(255,123,114,0.15); color: var(--err); border: 1.5px solid rgba(255,123,114,0.5); }
+      .ticket-pair {
+        font-family: var(--mono); font-size: 13px; color: var(--muted);
+        letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 4px;
+      }
+      .ticket-context {
+        font-size: 13px; color: var(--text); font-family: var(--mono);
+      }
+      .ticket-context .label { color: var(--muted); }
+      .size-block { text-align: right; }
+      .size-label { font-size: 11px; color: var(--muted); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 4px; }
+      .size-amount { font-family: var(--mono); font-size: 30px; font-weight: 700; color: var(--text); line-height: 1.1; }
+      .size-amount .currency { color: var(--muted); font-size: 16px; font-weight: 600; margin-right: 4px; }
+
+      .ticket-body { padding: 20px 24px; }
+      .section-label { font-size: 11px; font-weight: 600; color: var(--muted); letter-spacing: 0.06em; text-transform: uppercase; margin: 0 0 8px; }
+      .reason {
+        font-size: 14.5px; color: var(--text); line-height: 1.65;
+        margin-bottom: 16px;
+      }
+
+      /* —— Slippage gauge —— */
+      .slippage-row {
+        display: grid; grid-template-columns: 1fr auto; gap: 14px; align-items: center;
+        padding: 12px 14px; background: var(--panel-2); border: 1px solid var(--border);
+        border-radius: 8px; margin-bottom: 12px;
+      }
+      .slip-bar {
+        position: relative; height: 6px; background: var(--panel-3); border-radius: 3px; overflow: hidden;
+        border: 1px solid var(--border);
+      }
+      .slip-fill {
+        position: absolute; left: 0; top: 0; bottom: 0;
+        background: linear-gradient(90deg, var(--ok), var(--warn) 60%, var(--err) 90%);
+        border-radius: 3px;
+        transition: width 250ms ease-out;
+      }
+      .slip-label { font-size: 11px; color: var(--muted); display: flex; justify-content: space-between; margin-bottom: 6px; font-family: var(--mono); }
+      .slip-value { font-family: var(--mono); font-weight: 700; font-size: 16px; color: var(--text); white-space: nowrap; }
+      .slip-tag { font-size: 10px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; padding: 3px 8px; border-radius: 999px; margin-left: 8px; }
+      .slip-tag.tight   { background: rgba(126,231,135,0.15); color: var(--ok); border: 1px solid rgba(126,231,135,0.35); }
+      .slip-tag.wide    { background: rgba(240,183,107,0.15); color: var(--warn); border: 1px solid rgba(240,183,107,0.35); }
+      .slip-tag.danger  { background: rgba(255,123,114,0.15); color: var(--err); border: 1px solid rgba(255,123,114,0.35); }
+
+      /* —— Portfolio impact —— */
+      .portfolio-impact {
+        display: grid; grid-template-columns: 1fr auto 1fr; gap: 18px; align-items: stretch;
+        padding: 14px 18px; background: var(--panel-2); border: 1px solid var(--border);
+        border-radius: 8px;
+      }
+      .pf-col { display: flex; flex-direction: column; gap: 8px; }
+      .pf-title { font-size: 10px; font-weight: 700; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; }
+      .pf-row { display: flex; justify-content: space-between; font-family: var(--mono); font-size: 13px; }
+      .pf-row .lbl { color: var(--muted); }
+      .pf-row .val { color: var(--text); font-weight: 600; }
+      .pf-arrow {
+        display: flex; align-items: center; justify-content: center;
+        color: var(--accent); font-size: 22px; font-weight: 700;
+      }
+
+      /* —— Two-col body: chart + flow —— */
+      .data-grid { display: grid; grid-template-columns: 1.5fr 1fr; gap: 14px; margin-top: 16px; }
+      @media (max-width: 920px) { .data-grid { grid-template-columns: 1fr; } }
+      .chart-card { background: var(--panel-2); border: 1px solid var(--border); border-radius: 10px; padding: 16px; }
+      .chart-card h3 { margin: 0 0 4px; font-size: 13px; font-weight: 600; color: var(--text); display: flex; align-items: center; justify-content: space-between; }
+      .chart-card .sub { font-size: 11px; color: var(--muted); margin-bottom: 10px; font-family: var(--mono); }
+      .chart-card svg { width: 100%; height: 160px; display: block; }
+      .delta-up { color: var(--ok); }
+      .delta-down { color: var(--err); }
+
+      .flow-card { background: var(--panel-2); border: 1px solid var(--border); border-radius: 10px; padding: 14px; }
+      .flow-card h3 { margin: 0 0 12px; font-size: 13px; font-weight: 600; color: var(--text); }
+      .flow-list { display: flex; flex-direction: column; gap: 8px; max-height: 280px; overflow-y: auto; }
+      .flow-row {
+        display: grid; grid-template-columns: 20px 1fr auto; gap: 10px; align-items: center;
+        padding: 8px 10px; background: var(--panel); border: 1px solid var(--border); border-radius: 6px;
+      }
+      .flow-arrow { font-size: 14px; line-height: 1; }
+      .flow-arrow.bullish { color: var(--ok); }
+      .flow-arrow.bearish { color: var(--err); }
+      .flow-arrow.neutral { color: var(--muted); }
+      .flow-label { font-size: 12px; line-height: 1.4; }
+      .flow-label .label { color: var(--text); font-weight: 600; }
+      .flow-label .sub { color: var(--muted); font-size: 11px; font-family: var(--mono); }
+      .flow-amount { font-family: var(--mono); font-size: 12.5px; color: var(--text); font-weight: 600; white-space: nowrap; }
+
+      details.raw { margin-top: 12px; }
+      details.raw summary { cursor: pointer; color: var(--muted); font-size: 12px; padding: 6px 0; font-family: var(--mono); }
+      details.raw[open] summary { color: var(--text); }
+      details.raw pre {
+        margin: 8px 0 0; white-space: pre-wrap; word-break: break-word;
+        font-family: var(--mono); font-size: 12px; color: var(--text);
+        background: var(--panel-2); border: 1px solid var(--border); border-radius: 6px;
+        padding: 12px; max-height: 320px; overflow: auto;
+      }
+      details.soul { margin-top: 16px; }
+      details.soul summary { cursor: pointer; color: var(--muted); font-size: 13px; padding: 8px 0; }
+      details.soul[open] summary { color: var(--text); }
+      .soul-body {
+        margin-top: 8px; max-height: 380px; overflow: auto; padding: 14px;
+        background: var(--panel-2); border: 1px solid var(--border); border-radius: 6px;
+        font-family: var(--mono); font-size: 12.5px; white-space: pre-wrap;
+      }
       footer { margin-top: 32px; color: var(--muted); font-size: 12px; font-family: var(--mono); }
     </style>
   </head>
   <body>
     <main class="wrap">
+      <div class="brand" aria-label="FORU">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 104 24" fill="none">
+          <path fill="url(#foru_svg__a)" d="M15.324 6.315q-2.742 4.679-5.486 9.356a1.425 1.425 0 0 0 1.23 2.146h9.314c.514 0 .99.272 1.25.715a1.348 1.348 0 0 1-1.16 2.033l-14.105.012a1.516 1.516 0 0 1-1.307-2.284l9.403-15.975c.3-.51.3-1.14-.001-1.65a1.36 1.36 0 0 0-2.348.008L.22 21.079a1.6 1.6 0 0 0 1.386 2.406l23.922-.034a1.34 1.34 0 0 0 1.151-2.021L17.73 6.31a1.396 1.396 0 0 0-2.405.004zm-1.303 7.809q1.027-1.73 2.057-3.459a.53.53 0 0 1 .912.002l2.015 3.436a.52.52 0 0 1-.45.784l-4.108-.011a.498.498 0 0 1-.426-.753"/>
+          <g fill="#fff">
+            <path d="M43.603 5.842c-.236-.231-.552-.349-.935-.352L32.36 5.425h-.01c-.365 0-.678.122-.93.363q-.385.37-.39.95l-.096 15.441c-.003.37.124.688.375.943.252.254.568.386.938.388h.01c.366 0 .68-.127.933-.376.254-.251.386-.568.388-.938l.041-6.57 6.41.04h.012q.57 0 .93-.34a1.18 1.18 0 0 0 .365-.881 1.18 1.18 0 0 0-.356-.888c-.236-.23-.552-.349-.935-.352l-6.41-.04.033-5.271 8.986.056c.384 0 .7-.108.938-.326q.364-.335.368-.873c.002-.372-.118-.678-.356-.91zM103.17.505a.63.63 0 0 0-.499-.229.63.63 0 0 0-.499.23.75.75 0 0 0-.156.487V4.57q0 .287.151.479c.12.152.3.237.504.237a.63.63 0 0 0 .51-.244.76.76 0 0 0 .145-.473V.992a.75.75 0 0 0-.156-.488zM99.184.448a.62.62 0 0 0-.556-.277.64.64 0 0 0-.47.28l-2.34 3.99a.66.66 0 0 0 .018.601c.166.287.482.314.507.316h3.974l.738-.009a.58.58 0 0 0 .506-.302l.01-.02a.66.66 0 0 0 .02-.511L99.184.449zm.352 3.658q-.877-.001-1.752-.004a.212.212 0 0 1-.182-.321l.877-1.476a.226.226 0 0 1 .39 0l.859 1.467a.222.222 0 0 1-.192.334M59.496 7.929a8.7 8.7 0 0 0-2.908-1.923c-1.114-.453-2.363-.683-3.711-.683-1.349 0-2.602.23-3.723.683a8.5 8.5 0 0 0-2.908 1.924 8.8 8.8 0 0 0-1.888 2.93c-.445 1.121-.67 2.373-.67 3.723s.225 2.606.67 3.733a8.7 8.7 0 0 0 1.889 2.942 8.5 8.5 0 0 0 2.907 1.924c1.122.453 2.374.683 3.723.683s2.597-.23 3.711-.683a8.7 8.7 0 0 0 2.908-1.923 8.7 8.7 0 0 0 1.9-2.943c.446-1.128.672-2.385.672-3.733s-.226-2.6-.671-3.723a8.7 8.7 0 0 0-1.9-2.93zm-6.619 13.518c-.966 0-1.865-.177-2.671-.526a6.3 6.3 0 0 1-2.1-1.451 6.7 6.7 0 0 1-1.374-2.18 7.4 7.4 0 0 1-.492-2.71c0-.968.166-1.879.492-2.711a6.7 6.7 0 0 1 1.375-2.18 6.2 6.2 0 0 1 2.098-1.44c.807-.34 1.707-.513 2.672-.513s1.865.173 2.672.514a6.3 6.3 0 0 1 2.11 1.44 6.4 6.4 0 0 1 1.374 2.178c.32.832.481 1.744.481 2.71s-.161 1.88-.481 2.712a6.4 6.4 0 0 1-1.373 2.177 6.5 6.5 0 0 1-2.112 1.452c-.808.348-1.706.525-2.671.525zM74.13 16.125l.112-.055a5.3 5.3 0 0 0 2.117-1.943c.505-.824.762-1.777.762-2.83 0-1.129-.256-2.134-.761-2.99a5.4 5.4 0 0 0-2.116-2.022c-.898-.488-1.94-.735-3.099-.735H67.04q-.555.001-.938.37c-.254.245-.383.566-.383.952v15.44c0 .37.128.687.381.94q.383.382.94.382c.37 0 .707-.129.953-.384.244-.253.369-.568.369-.937v-5.544h2.783q.176 0 .347-.006l3.872 6.236q.201.328.498.483.291.151.644.152.812-.001 1.147-.656c.22-.43.18-.894-.12-1.377zm.437-4.828c0 .579-.146 1.102-.435 1.558a2.96 2.96 0 0 1-1.2 1.07c-.511.255-1.112.384-1.787.384h-2.783V8.012h2.783c.672 0 1.273.14 1.783.417.507.276.912.665 1.203 1.158.29.494.437 1.07.437 1.71M94.96 5.923q-.36-.372-.941-.373c-.386 0-.685.125-.938.37-.255.245-.384.566-.384.952v10.651c0 .79-.203 1.498-.605 2.103-.402.608-.968 1.09-1.68 1.435-.715.346-1.55.522-2.483.522-.932 0-1.831-.176-2.577-.522-.742-.345-1.33-.828-1.747-1.436-.415-.605-.626-1.312-.626-2.102V6.872c0-.385-.124-.706-.37-.951-.246-.246-.567-.37-.951-.37a1.28 1.28 0 0 0-.938.368c-.255.246-.384.567-.384.953v10.651c0 1.253.326 2.383.97 3.36.641.974 1.546 1.746 2.688 2.294 1.14.546 2.463.823 3.936.823s2.714-.277 3.823-.823c1.112-.548 1.994-1.321 2.62-2.296.627-.976.946-2.106.946-3.358V6.872q0-.58-.358-.95z"/>
+          </g>
+          <defs>
+            <linearGradient id="foru_svg__a" x1="0" x2="26.868" y1="11.743" y2="11.743" gradientUnits="userSpaceOnUse">
+              <stop stop-color="#3E198B"/>
+              <stop offset="0.37" stop-color="#9047EF"/>
+              <stop offset="0.82" stop-color="#DD99F8"/>
+              <stop offset="1" stop-color="#F7CAFB"/>
+            </linearGradient>
+          </defs>
+        </svg>
+      </div>
+
       <header>
-        <div class="tag">Archetype E</div>
-        <h1>Head Trader</h1>
-        <div class="problem">P5 — Execution</div>
+        <div class="h-left">
+          <div class="tag">Archetype E</div>
+          <h1>Head Trader</h1>
+          <div class="problem">P5 — Execution</div>
+        </div>
+        <div class="endpoint-badge" id="health-badge">● connecting…</div>
       </header>
 
-      <section class="grid">
-        <div class="panel">
-          <h2>Input</h2>
-          <form id="run-form">
-            <label>
+      <section class="panel">
+        <h2 class="panel-title">Order request</h2>
+        <div class="input-row">
+          <div>
+            <div class="field-label">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M16 8l-4 4-4-4M8 16h8"/></svg>
               Pair
-              <select id="pair">
-                <option>BTCUSDT</option>
-                <option>ETHUSDT</option>
-              </select>
-            </label>
-            <label>
-              Free balance (USD)
-              <input id="baseFreeUsd" type="number" step="100" min="0" value="10000" />
-            </label>
-            <label>
-              Open position (USD)
-              <input id="positionUsd" type="number" step="100" min="0" value="0" />
-            </label>
-            <div class="row">
-              <button id="run-btn" type="submit">Run</button>
-              <button id="sample-btn" type="button" class="ghost">Sample</button>
             </div>
-            <div id="status" class="status"></div>
-          </form>
-        </div>
+            <div class="seg-picker" id="pair-picker">
+              <button type="button" class="seg-btn active" data-pair="BTCUSDT">
+                <svg viewBox="0 0 32 32" aria-hidden="true">
+                  <circle cx="16" cy="16" r="14" fill="#f7931a"/>
+                  <path d="M20.5 14.2c0.2-1.5-0.9-2.3-2.5-2.9l0.5-2.1-1.3-0.3-0.5 2-1-0.3 0.5-2.1-1.3-0.3-0.5 2.1-0.8-0.2-1.8-0.5-0.3 1.4 1 0.2c0.6 0.1 0.7 0.5 0.7 0.8l-0.6 2.4 0.1 0-0.1 0-0.8 3.4c-0.1 0.1-0.2 0.4-0.6 0.3l-1-0.3-0.6 1.5 1.7 0.4 0.9 0.2-0.5 2.1 1.3 0.3 0.5-2.1 1 0.3-0.5 2.1 1.3 0.3 0.5-2.1c2.1 0.4 3.7 0.2 4.4-1.7 0.6-1.5-0.1-2.4-1.1-3 0.8-0.2 1.4-0.7 1.6-1.7zm-2.8 4c-0.4 1.5-2.9 0.7-3.7 0.5l0.7-2.8c0.8 0.2 3.5 0.6 3 2.3zm0.4-4.1c-0.4 1.4-2.5 0.7-3.2 0.5l0.6-2.5c0.7 0.2 3 0.5 2.6 2z" fill="white"/>
+                </svg>
+                BTCUSDT
+              </button>
+              <button type="button" class="seg-btn" data-pair="ETHUSDT">
+                <svg viewBox="0 0 32 32" aria-hidden="true">
+                  <g fill="currentColor"><path d="M16 3 L8 16.5 L16 21 L24 16.5 Z" opacity="0.75"/><path d="M16 22.5 L8 18 L16 29 L24 18 Z" opacity="0.55"/></g>
+                </svg>
+                ETHUSDT
+              </button>
+              <button type="button" class="seg-btn" data-pair="SOLUSDT">
+                <svg viewBox="0 0 32 32" aria-hidden="true">
+                  <defs>
+                    <linearGradient id="solg4" x1="0" y1="0" x2="1" y2="1">
+                      <stop offset="0" stop-color="#9945FF"/>
+                      <stop offset="1" stop-color="#14F195"/>
+                    </linearGradient>
+                  </defs>
+                  <path d="M6 22 L24 22 L26 25 L8 25 Z" fill="url(#solg4)"/>
+                  <path d="M6 14 L24 14 L26 17 L8 17 Z" fill="url(#solg4)"/>
+                  <path d="M6 6 L24 6 L26 9 L8 9 Z" fill="url(#solg4)"/>
+                </svg>
+                SOLUSDT
+              </button>
+            </div>
+          </div>
 
-        <div class="panel">
-          <h2>Output</h2>
-          <pre id="output">// signal / sizeUsd / reason / slippage</pre>
+          <div>
+            <div class="field-label">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="3"/></svg>
+              Free balance
+            </div>
+            <div class="num-input">
+              <span class="prefix">$</span>
+              <input id="free-bal" type="number" step="500" min="0" value="10000" />
+              <div class="stack">
+                <button type="button" data-step="up" data-target="free-bal" data-amount="500">▲</button>
+                <button type="button" data-step="down" data-target="free-bal" data-amount="500">▼</button>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <div class="field-label">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 17 9 11 13 15 21 7"/><polyline points="14 7 21 7 21 14"/></svg>
+              Open position
+            </div>
+            <div class="num-input">
+              <span class="prefix">$</span>
+              <input id="position" type="number" step="500" min="0" value="0" />
+              <div class="stack">
+                <button type="button" data-step="up" data-target="position" data-amount="500">▲</button>
+                <button type="button" data-step="down" data-target="position" data-amount="500">▼</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="run-area">
+            <button id="run-btn" class="primary" type="button">Decide trade</button>
+          </div>
         </div>
+        <div id="status" class="status"></div>
       </section>
 
-      <details>
+      <section style="margin-top: 20px;">
+        <div id="empty" class="empty">Set pair and portfolio, then call the trade.</div>
+        <div id="loading" class="loading" style="display:none">Reading candles and on-chain flow</div>
+        <div id="error-block" class="empty" style="display:none; color: var(--err); border-color: rgba(255,123,114,0.35);"></div>
+
+        <article id="result" class="result">
+          <div class="ticket">
+            <div class="ticket-head">
+              <div id="signal-chip" class="signal-chip hold">HOLD</div>
+              <div>
+                <div class="ticket-pair" id="ticket-pair">—</div>
+                <div class="ticket-context">
+                  <span class="label">Free</span> <span id="ctx-free">—</span>
+                  &nbsp;·&nbsp;
+                  <span class="label">Position</span> <span id="ctx-pos">—</span>
+                </div>
+              </div>
+              <div class="size-block">
+                <div class="size-label">Order size</div>
+                <div class="size-amount"><span class="currency">$</span><span id="size-amount">0</span></div>
+              </div>
+            </div>
+
+            <div class="ticket-body">
+              <div class="section-label">Reason</div>
+              <div class="reason" id="reason"></div>
+
+              <div class="slippage-row">
+                <div>
+                  <div class="slip-label">
+                    <span>Slippage tolerance</span>
+                    <span style="display: flex; align-items: center;">
+                      <span class="slip-value" id="slip-value">—</span>
+                      <span class="slip-tag" id="slip-tag">—</span>
+                    </span>
+                  </div>
+                  <div class="slip-bar"><div class="slip-fill" id="slip-fill" style="width:0%"></div></div>
+                  <div style="display: flex; justify-content: space-between; font-size: 10px; color: var(--muted); margin-top: 4px; font-family: var(--mono);">
+                    <span>0%</span><span>1%</span><span>2%</span><span>3%</span><span>4%</span><span>5%</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="portfolio-impact">
+                <div class="pf-col">
+                  <div class="pf-title">Before</div>
+                  <div class="pf-row"><span class="lbl">Free</span><span class="val" id="before-free">—</span></div>
+                  <div class="pf-row"><span class="lbl">Position</span><span class="val" id="before-pos">—</span></div>
+                </div>
+                <div class="pf-arrow">→</div>
+                <div class="pf-col">
+                  <div class="pf-title">After</div>
+                  <div class="pf-row"><span class="lbl">Free</span><span class="val" id="after-free">—</span></div>
+                  <div class="pf-row"><span class="lbl">Position</span><span class="val" id="after-pos">—</span></div>
+                </div>
+              </div>
+
+              <div class="data-grid">
+                <div class="chart-card">
+                  <h3>
+                    <span id="price-title">Price</span>
+                    <span id="price-delta" class="sub"></span>
+                  </h3>
+                  <div class="sub" id="price-sub">—</div>
+                  <div id="price-chart-host"></div>
+                </div>
+                <div class="flow-card">
+                  <h3>On-chain flow</h3>
+                  <div id="flow-list" class="flow-list"></div>
+                </div>
+              </div>
+
+              <details class="raw">
+                <summary>Raw JSON response</summary>
+                <pre id="raw-json"></pre>
+              </details>
+            </div>
+          </div>
+        </article>
+      </section>
+
+      <details class="soul">
         <summary>View SOUL (the persona running this agent)</summary>
-        <div class="soul" id="soul">loading…</div>
+        <div class="soul-body" id="soul">loading…</div>
       </details>
 
       <footer>
-        Endpoints — <code>POST /invoke</code> · <code>/mcp</code> · <code>GET /soul</code> · <code>GET /health</code>
+        Endpoints —
+        <code>POST /invoke</code> ·
+        <code>GET /data</code> ·
+        <code>/mcp</code> ·
+        <code>GET /soul</code> ·
+        <code>GET /health</code>
       </footer>
     </main>
 
     <script>
       const $ = (id) => document.getElementById(id);
-      const form = $("run-form");
-      const status = $("status");
-      const output = $("output");
-      const runBtn = $("run-btn");
+
+      const state = {
+        pair: "BTCUSDT",
+        baseFreeUsd: 10000,
+        positionUsd: 0,
+      };
+
+      function bindPicker(rootId, attr, onChange) {
+        const root = $(rootId);
+        root.addEventListener("click", (e) => {
+          const btn = e.target.closest("button");
+          if (!btn) return;
+          for (const b of root.querySelectorAll("button")) b.classList.remove("active");
+          btn.classList.add("active");
+          onChange(btn.dataset[attr]);
+        });
+      }
+      bindPicker("pair-picker", "pair", (v) => (state.pair = v));
+
+      document.querySelectorAll('button[data-step]').forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const target = $(btn.dataset.target);
+          const amount = Number(btn.dataset.amount);
+          const cur = Number(target.value) || 0;
+          const next = btn.dataset.step === "up" ? cur + amount : cur - amount;
+          const min = Number(target.min ?? 0);
+          target.value = Math.max(min, next);
+          target.dispatchEvent(new Event("input"));
+        });
+      });
+      $("free-bal").addEventListener("input", () => state.baseFreeUsd = Number($("free-bal").value) || 0);
+      $("position").addEventListener("input", () => state.positionUsd = Number($("position").value) || 0);
 
       function setStatus(text, kind) {
-        status.textContent = text;
-        status.className = "status" + (kind ? " " + kind : "");
+        $("status").textContent = text;
+        $("status").className = "status" + (kind ? " " + kind : "");
+      }
+      function showEmpty() { $("empty").style.display = ""; $("loading").style.display = "none"; $("result").classList.remove("show"); $("error-block").style.display = "none"; }
+      function showLoading() { $("empty").style.display = "none"; $("loading").style.display = ""; $("result").classList.remove("show"); $("error-block").style.display = "none"; }
+      function showError(msg) { $("empty").style.display = "none"; $("loading").style.display = "none"; $("result").classList.remove("show"); $("error-block").style.display = ""; $("error-block").textContent = msg; }
+
+      function fmtUsd(n) { return Number(n).toLocaleString(); }
+
+      function signalClass(sig) {
+        const s = String(sig || "HOLD").toUpperCase();
+        return ["BUY","HOLD","SELL"].includes(s) ? s.toLowerCase() : "hold";
       }
 
-      async function invoke() {
-        const payload = {
-          pair: $("pair").value,
-          portfolio: {
-            baseFreeUsd: Number($("baseFreeUsd").value) || 0,
-            positionUsd: Number($("positionUsd").value) || 0,
-          },
-        };
-        runBtn.disabled = true;
-        setStatus("Running…");
-        const t0 = performance.now();
-        try {
-          const res = await fetch("/invoke", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload),
-          });
-          const body = await res.json();
-          output.textContent = JSON.stringify(body, null, 2);
-          const dur = Math.round(performance.now() - t0);
-          if (!res.ok) setStatus(`HTTP ${res.status} (${dur}ms)`, "err");
-          else setStatus(`200 OK in ${dur}ms`, "ok");
-        } catch (err) {
-          output.textContent = String(err);
-          setStatus("Network error", "err");
-        } finally {
-          runBtn.disabled = false;
+      function slipTag(pct) {
+        if (pct <= 0.5) return { cls: "tight", label: "Tight" };
+        if (pct <= 2)   return { cls: "wide",  label: "Wide" };
+        return { cls: "danger", label: "Wide / risky" };
+      }
+
+      function drawPriceChart(candles, pair) {
+        const host = $("price-chart-host");
+        host.innerHTML = "";
+        $("price-title").textContent = pair ? `Price · ${pair}` : "Price";
+        if (!candles || candles.length === 0) {
+          $("price-sub").textContent = "no candles returned";
+          $("price-delta").textContent = "";
+          host.innerHTML = '<div style="color: var(--muted); font-size: 12px; padding: 24px 0; text-align: center;">No price data</div>';
+          return;
+        }
+        const closes = candles.map((c) => c.close);
+        const min = Math.min(...closes), max = Math.max(...closes);
+        const range = max - min || 1;
+        const first = closes[0], last = closes.at(-1);
+        const pct = ((last - first) / first) * 100;
+        const W = 480, H = 160, padX = 6, padY = 8;
+        const xStep = (W - padX * 2) / Math.max(1, closes.length - 1);
+        const pts = closes.map((v, i) => `${(padX + i * xStep).toFixed(2)},${(H - padY - ((v - min) / range) * (H - padY * 2)).toFixed(2)}`).join(" ");
+        const lastX = padX + (closes.length - 1) * xStep;
+        const lastY = H - padY - ((last - min) / range) * (H - padY * 2);
+        const color = pct >= 0 ? "#7ee787" : "#ff7b72";
+        host.innerHTML = `
+          <svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">
+            <defs>
+              <linearGradient id="pgradE" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="${color}" stop-opacity="0.3"/>
+                <stop offset="1" stop-color="${color}" stop-opacity="0"/>
+              </linearGradient>
+            </defs>
+            <polyline points="${pts} ${lastX},${H - padY} ${padX},${H - padY}" fill="url(#pgradE)" stroke="none"/>
+            <polyline points="${pts}" fill="none" stroke="${color}" stroke-width="1.8" stroke-linejoin="round"/>
+            <line x1="${padX}" y1="${lastY.toFixed(2)}" x2="${(W - padX).toFixed(2)}" y2="${lastY.toFixed(2)}" stroke="${color}" stroke-width="0.6" stroke-dasharray="3,4" stroke-opacity="0.5"/>
+            <text x="${(W - padX - 4).toFixed(2)}" y="${(lastY - 4).toFixed(2)}" text-anchor="end" fill="${color}" font-size="10" font-family="ui-monospace,monospace">last ${last.toFixed(2)}</text>
+            <circle cx="${lastX.toFixed(2)}" cy="${lastY.toFixed(2)}" r="3.5" fill="${color}"/>
+          </svg>
+        `;
+        $("price-sub").textContent = `${candles.length} × 1m · ${min.toFixed(2)} → ${max.toFixed(2)}`;
+        $("price-delta").innerHTML = `<span class="${pct >= 0 ? 'delta-up' : 'delta-down'}">${pct >= 0 ? '▲' : '▼'} ${Math.abs(pct).toFixed(2)}%</span>`;
+      }
+
+      function drawFlow(transfers) {
+        const host = $("flow-list");
+        host.innerHTML = "";
+        if (!transfers || transfers.length === 0) {
+          host.innerHTML = '<div style="color: var(--muted); font-size: 12px; padding: 12px 0; text-align: center;">No recent flow</div>';
+          return;
+        }
+        function classify(t) {
+          const from = (t.from || "").toLowerCase();
+          const to = (t.to || "").toLowerCase();
+          const fromEx = /exchange|binance|kraken|bitfinex|coinbase|backpack|jump|wintermute|hot|deposit/.test(from);
+          const toEx = /exchange|binance|kraken|bitfinex|coinbase|backpack|jump|wintermute|hot|deposit|prime/.test(to);
+          const fromCold = /cold|self|wallet|treasury|cbbtc|wbtc/.test(from);
+          const toCold = /cold|self|wallet|treasury|validator/.test(to);
+          if (fromEx && toCold) return { dir: "bullish", arrow: "↓", label: "exchange → cold" };
+          if (fromCold && toEx) return { dir: "bearish", arrow: "↑", label: "cold → exchange" };
+          if (fromEx && toEx) return { dir: "neutral", arrow: "↔", label: "exchange rebalance" };
+          return { dir: "neutral", arrow: "·", label: t.label || "transfer" };
+        }
+        for (const t of transfers) {
+          const c = classify(t);
+          const row = document.createElement("div");
+          row.className = "flow-row";
+          row.innerHTML = `
+            <div class="flow-arrow ${c.dir}">${c.arrow}</div>
+            <div class="flow-label">
+              <div class="label">${c.label}</div>
+              <div class="sub">${(t.from || "").slice(0, 22)} → ${(t.to || "").slice(0, 22)}</div>
+            </div>
+            <div class="flow-amount">$${Number(t.amountUsd).toLocaleString()}</div>
+          `;
+          host.appendChild(row);
         }
       }
 
-      form.addEventListener("submit", (e) => { e.preventDefault(); invoke(); });
-      $("sample-btn").addEventListener("click", () => {
-        $("pair").value = "BTCUSDT";
-        $("baseFreeUsd").value = "10000";
-        $("positionUsd").value = "0";
-        invoke();
-      });
+      function showTicket(out) {
+        $("empty").style.display = "none";
+        $("loading").style.display = "none";
+        $("error-block").style.display = "none";
+        $("result").classList.add("show");
+
+        const sig = String(out.signal || "HOLD").toUpperCase();
+        const sigClass = signalClass(sig);
+        const chip = $("signal-chip");
+        chip.className = "signal-chip " + sigClass;
+        chip.textContent = sig;
+
+        $("ticket-pair").textContent = state.pair;
+        $("ctx-free").textContent = "$" + fmtUsd(state.baseFreeUsd);
+        $("ctx-pos").textContent = "$" + fmtUsd(state.positionUsd);
+
+        const size = Math.max(0, Math.round(Number(out.sizeUsd) || 0));
+        $("size-amount").textContent = fmtUsd(size);
+
+        $("reason").textContent = out.reason || "(no reason returned)";
+
+        // Slippage gauge
+        const slip = Math.max(0, Math.min(5, Number(out.slippageTolerancePct) || 0));
+        $("slip-value").textContent = slip.toFixed(2) + "%";
+        $("slip-fill").style.width = (slip / 5 * 100) + "%";
+        const tag = slipTag(slip);
+        $("slip-tag").className = "slip-tag " + tag.cls;
+        $("slip-tag").textContent = tag.label;
+
+        // Portfolio impact
+        const beforeFree = state.baseFreeUsd, beforePos = state.positionUsd;
+        let afterFree = beforeFree, afterPos = beforePos;
+        if (sig === "BUY")  { afterFree = Math.max(0, beforeFree - size); afterPos = beforePos + size; }
+        if (sig === "SELL") { afterPos  = Math.max(0, beforePos  - size); afterFree = beforeFree + size; }
+        $("before-free").textContent = "$" + fmtUsd(beforeFree);
+        $("before-pos").textContent  = "$" + fmtUsd(beforePos);
+        $("after-free").textContent  = "$" + fmtUsd(afterFree);
+        $("after-pos").textContent   = "$" + fmtUsd(afterPos);
+
+        $("raw-json").textContent = JSON.stringify(out, null, 2);
+      }
+
+      async function fetchData() {
+        try {
+          const res = await fetch(`/data?pair=${encodeURIComponent(state.pair)}`);
+          if (!res.ok) return null;
+          return await res.json();
+        } catch { return null; }
+      }
+      async function fetchDecision() {
+        const res = await fetch("/invoke", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            pair: state.pair,
+            portfolio: { baseFreeUsd: state.baseFreeUsd, positionUsd: state.positionUsd },
+          }),
+        });
+        return { ok: res.ok, status: res.status, body: await res.json() };
+      }
+
+      async function run() {
+        $("run-btn").disabled = true;
+        showLoading();
+        setStatus("Calling… CodeBuddy spawns a subprocess; first call ~10–15s");
+        const t0 = performance.now();
+        const dataP = fetchData();
+        const decP = fetchDecision();
+        try {
+          const data = await dataP;
+          if (data) {
+            drawPriceChart(data.candles, data.pair);
+            drawFlow(data.largeTransfers);
+          }
+          const { ok, status, body } = await decP;
+          const dur = Math.round(performance.now() - t0);
+          if (!ok) {
+            showError(body.error ?? `HTTP ${status}`);
+            setStatus(`HTTP ${status} (${(dur/1000).toFixed(1)}s)`, "err");
+          } else {
+            showTicket(body);
+            setStatus(`Decision in ${(dur/1000).toFixed(1)}s`, "ok");
+          }
+        } catch (err) {
+          showError(String(err));
+          setStatus("Network error", "err");
+        } finally {
+          $("run-btn").disabled = false;
+        }
+      }
+
+      $("run-btn").addEventListener("click", run);
+
+      // —— Boot ——
+      fetch("/health").then((r) => r.json())
+        .then((j) => ($("health-badge").innerHTML = `<span style="color: var(--ok)">●</span> ${j.role}`))
+        .catch(() => ($("health-badge").innerHTML = '<span style="color: var(--err)">●</span> offline'));
 
       fetch("/soul").then((r) => r.text())
         .then((t) => ($("soul").textContent = t))
