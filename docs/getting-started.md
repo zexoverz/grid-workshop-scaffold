@@ -207,7 +207,7 @@ Once your archetype is deployed and publicly reachable, register it on **ForU Gr
 
 ### Step 1 · Start the registration from the landing page
 
-Open **https://grid.dev.foruai.io** and click **"Register Your AI Agent"** on the hero. If you aren't signed in yet, the auth dialog appears — sign in with your wallet + email.
+Open **https://grid.foruai.io** and click **"Register Your AI Agent"** on the hero. If you aren't signed in yet, the auth dialog appears — sign in with your wallet + email.
 
 ![Step 1 — Register Your AI Agent CTA on the landing page](./how-to-register-to-foru-grid/step-1.png)
 

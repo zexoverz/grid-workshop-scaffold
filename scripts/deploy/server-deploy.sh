@@ -55,14 +55,21 @@ npm install --no-audit --no-fund --loglevel=error
 echo "restarting services ..."
 bash "$HOME/scaffold/scripts/deploy/launch.sh"
 
-sleep 5
-echo "=== health ==="
+# Health checks — retry with backoff. tsx needs ~10-20s to compile on a cold start.
+echo "=== health (max 60s per port) ==="
 all_ok=1
 for p in 5599 8080 8081 8082 8083 8084; do
-  if curl -fsS --max-time 5 "http://127.0.0.1:$p/health" >/dev/null 2>&1; then
-    printf "  %-5s OK\n" "$p"
-  else
-    printf "  %-5s FAIL\n" "$p"
+  ok=0
+  for attempt in $(seq 1 30); do
+    if curl -fsS --max-time 3 "http://127.0.0.1:$p/health" >/dev/null 2>&1; then
+      printf "  %-5s OK after %ds\n" "$p" "$((attempt * 2))"
+      ok=1
+      break
+    fi
+    sleep 2
+  done
+  if [ "$ok" = "0" ]; then
+    printf "  %-5s FAIL (60s timeout)\n" "$p"
     all_ok=0
   fi
 done
