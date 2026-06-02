@@ -17,9 +17,8 @@ pick if you're behind schedule.
 ## The boilerplate works out of the box
 
 ```bash
-npx foru choose D
-npx foru test
-npx foru submit
+cd archetypes/D-operations-officer
+PORT=8083 npm run dev    # operator console on http://127.0.0.1:8083
 ```
 
 ## To customize — edit `SOUL.md`
@@ -48,6 +47,9 @@ This is where most of D's customization happens.
 > Change the input to accept `pairs: string[]` and evaluate each one.
 > Roll up severity across all pairs.
 
-## OpenClaw deploy recipe
+## Deploy
 
-`npx foru submit` prints the exact message.
+Run locally with `npm run dev`, or containerize with the included
+`Dockerfile`. D's brain is deterministic so it's the most reliable
+archetype to demo. See [`docs/getting-started.md`](../../docs/getting-started.md)
+for the full setup and Grid registration walkthrough.

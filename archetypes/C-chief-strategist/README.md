@@ -13,9 +13,8 @@
 ## The boilerplate works out of the box
 
 ```bash
-npx foru choose C
-npx foru test
-npx foru submit
+cd archetypes/C-chief-strategist
+PORT=8082 npm run dev    # operator console on http://127.0.0.1:8082
 ```
 
 ## To customize — edit `SOUL.md`
@@ -44,6 +43,8 @@ Only when you want to change which data the LLM sees.
 > In brain.ts, change the candle window from 60 to 240 (4 hours of 1m
 > candles). Slice the most recent 60 for the LLM.
 
-## OpenClaw deploy recipe
+## Deploy
 
-`npx foru submit` prints the exact message.
+Run locally with `npm run dev`, or containerize with the included
+`Dockerfile`. See [`docs/getting-started.md`](../../docs/getting-started.md)
+for the full setup and Grid registration walkthrough.

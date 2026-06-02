@@ -13,9 +13,8 @@
 ## The boilerplate works out of the box
 
 ```bash
-npx foru choose B
-npx foru test
-npx foru submit
+cd archetypes/B-customer-success-lead
+PORT=8081 npm run dev    # operator console on http://127.0.0.1:8081
 ```
 
 ## To customize — edit `SOUL.md`
@@ -40,6 +39,8 @@ npx foru submit
 
 Add or rewrite FAQ entries. The brain passes them to the LLM as context.
 
-## OpenClaw deploy recipe
+## Deploy
 
-`npx foru submit` prints the exact message.
+Run locally with `npm run dev`, or containerize with the included
+`Dockerfile`. See [`docs/getting-started.md`](../../docs/getting-started.md)
+for the full setup and Grid registration walkthrough.

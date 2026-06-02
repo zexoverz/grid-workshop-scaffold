@@ -192,7 +192,6 @@ If 3+ teams hit the same bug, a facilitator will broadcast a room-wide fix.
 - **FORU AI** — workshop owner, Grid platform, MC + Lead Engineer
 - **EKRAF / Kemenkraf** — government voice on AI
 - **Tencent CodeBuddy** — primary AI tooling partner
-- **OpenClaw** — agent orchestration layer
 - **ICEX** — industry partner, Founder Mindset segment
 - **INDODAX** — industry challenge partner, Problem Mapping & Archetype Selection
 - **Mancer** — Pitch Crash Course, certificate issuer

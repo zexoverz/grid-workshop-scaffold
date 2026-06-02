@@ -13,9 +13,8 @@
 ## The boilerplate works out of the box
 
 ```bash
-npx foru choose A    # pick this archetype
-npx foru test        # runs the brain, validates the output
-npx foru submit      # tests, then hands off to OpenClaw
+cd archetypes/A-head-of-research
+npm run dev          # operator console on http://127.0.0.1:8080
 ```
 
 No edits required. The agent will already produce a valid research brief.
@@ -61,11 +60,11 @@ new source, change record counts, add retry logic.
 > `confidence > 0.9`, re-prompt the LLM with "are you sure?" and use
 > the second response.
 
-## OpenClaw deploy recipe
+## Deploy
 
-When you run `npx foru submit`, it prints the exact message to send to
-your OpenClaw chat. Paste it into Telegram or Discord. OpenClaw wraps
-the brain + SOUL as a Grid agent and returns a callable URL.
+Run locally with `npm run dev`, or containerize with the included
+`Dockerfile`. See [`docs/getting-started.md`](../../docs/getting-started.md)
+for the full setup, calibration, and Grid registration walkthrough.
 
 ## When LLM is unavailable
 
