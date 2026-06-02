@@ -10,7 +10,7 @@ This guide walks through running the workshop scaffold on your laptop end-to-end
 - **npm** (ships with Node).
 - **One LLM credential** — pick one:
   - **OpenAI** (fastest, default) — `sk-…` from https://platform.openai.com/api-keys
-  - **CodeBuddy** (partner-product fit) — `ck_…` from https://www.codebuddy.ai/profile/keys. **Also requires the CodeBuddy CLI on PATH** — the SDK spawns it as a subprocess. See `docs/codebuddy-docs/sdk.md` for install.
+  - **CodeBuddy** (partner-product fit) — `ck_…` from https://www.codebuddy.ai/profile/keys. The SDK (`@tencent-ai/agent-sdk@0.2.0`) ships its own CLI binary inside `node_modules/@tencent-ai/agent-sdk/cli/bin/` and spawns it from there — **no separate install needed**, just `npm install` and set `CODEBUDDY_API_KEY`. See `docs/codebuddy-docs/sdk.md` for reference.
 - *(Optional)* Docker, if you want to containerize an archetype for deploy.
 
 > Archetype D is **deterministic** (no LLM call) — if you only want to play with D you can skip the LLM credential entirely.
@@ -51,7 +51,7 @@ MOCK_ONCHAIN_URL=http://127.0.0.1:5599
 | `AGENT_RUNTIME=` | Set these | Notes |
 |---|---|---|
 | `openai` | `LLM_API_KEY=sk-…`, `LLM_MODEL=gpt-4o-mini` | ~2–4s per /invoke call |
-| `codebuddy` | `CODEBUDDY_API_KEY=ck_…`, `CODEBUDDY_MODEL=default-model` | ~10–15s per /invoke (subprocess spawn); needs CodeBuddy CLI installed |
+| `codebuddy` | `CODEBUDDY_API_KEY=ck_…`, `CODEBUDDY_MODEL=default-model` | ~10–15s per /invoke (SDK spawns its bundled CLI from `node_modules`; nothing extra to install) |
 
 ---
 
