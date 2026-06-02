@@ -444,30 +444,39 @@
           $("engagement-sub").textContent = "0 tweets";
           return;
         }
-        // Bucket by hour-ago using createdAt
+        // Always render 24 buckets across the chosen window — keeps the chart
+        // legible at every windowHours (1h, 4h, 12h, 24h, 48h, 7d).
         const now = Date.now();
-        const buckets = new Array(state.windowHours).fill(0);
+        const windowMs = Math.max(1, state.windowHours) * 3_600_000;
+        const N = 24;
+        const bucketMs = windowMs / N;
+        const buckets = new Array(N).fill(0);
         for (const t of tweets) {
           const ageMs = now - new Date(t.createdAt).getTime();
-          const h = Math.floor(ageMs / 3_600_000);
-          if (h >= 0 && h < buckets.length) {
-            buckets[h] += (t.likes || 0) + (t.retweets || 0);
-          }
+          if (ageMs < 0 || ageMs >= windowMs) continue;
+          const idx = Math.min(N - 1, Math.floor(ageMs / bucketMs));
+          buckets[idx] += (t.likes || 0) + (t.retweets || 0);
         }
         // Reverse so oldest is on the left
         const data = buckets.slice().reverse();
         const max = Math.max(...data, 1);
         const W = 360, H = 140, padX = 4, padY = 6;
-        const barW = (W - padX * 2) / data.length;
+        const slotW = (W - padX * 2) / N;
+        const gap = Math.min(2, slotW * 0.2);
+        const barW = Math.max(1, slotW - gap);
         const bars = data.map((v, i) => {
+          if (v === 0) return ""; // skip empties so gaps are clearly visible
           const h = (v / max) * (H - padY * 2);
-          const x = padX + i * barW;
+          const x = padX + i * slotW + gap / 2;
           const y = H - padY - h;
-          return `<rect x="${x.toFixed(2)}" y="${y.toFixed(2)}" width="${(barW - 1).toFixed(2)}" height="${h.toFixed(2)}" fill="var(--accent)" rx="1"/>`;
+          return `<rect x="${x.toFixed(2)}" y="${y.toFixed(2)}" width="${barW.toFixed(2)}" height="${h.toFixed(2)}" fill="var(--accent)" rx="1"/>`;
         }).join("");
         host.innerHTML = `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">${bars}</svg>`;
-        const total = data.reduce((a, b) => a + b, 0);
-        $("engagement-sub").textContent = `${tweets.length} tweets · ${total.toLocaleString()} likes+rt total`;
+        const total = buckets.reduce((a, b) => a + b, 0);
+        const bucketLabel =
+          bucketMs >= 3_600_000 ? `${(bucketMs / 3_600_000).toFixed(0)}h bins` :
+          `${Math.round(bucketMs / 60_000)}m bins`;
+        $("engagement-sub").textContent = `${tweets.length} tweets · ${total.toLocaleString()} likes+rt · ${bucketLabel}`;
       }
 
       // —— Result rendering ——
