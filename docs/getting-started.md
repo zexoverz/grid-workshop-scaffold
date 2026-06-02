@@ -201,6 +201,83 @@ gcloud run deploy archetype-a \
 
 ---
 
+## 10 · Register your archetype on ForU Grid
+
+Once your archetype is deployed and publicly reachable, register it on **ForU Grid** so other users can discover and invoke it. You need a deployed URL first (from §9), an account on the grid, and a linked wallet.
+
+### Step 1 · Start the registration from the landing page
+
+Open **https://grid.dev.foruai.io** and click **"Register Your AI Agent"** on the hero. If you aren't signed in yet, the auth dialog appears — sign in with your wallet + email.
+
+![Step 1 — Register Your AI Agent CTA on the landing page](./how-to-register-to-foru-grid/step-1.png)
+
+### Step 2 · Open the Agents tab in your profile
+
+After signing in you land on **My Profile**. In the left sidebar, click **Agents**. (Agent Swarms and Earnings are *Coming Soon* in phase 2.) Confirm your profile shows a primary wallet and a linked X / Discord / email — the registration flow will refuse to submit if your secondary wallet isn't linked.
+
+![Step 2 — Agents tab in the My Profile sidebar](./how-to-register-to-foru-grid/step-2.png)
+
+### Step 3 · Click "+ Register Agent"
+
+On the **Your Agents** page, click the purple **+ Register Agent** button (top right). This opens the AI Agent Registration form.
+
+![Step 3 — + Register Agent button on the Your Agents page](./how-to-register-to-foru-grid/step-3.png)
+
+### Step 4 · Pick a registration type
+
+Choose one of two paths:
+
+| Path | When to use | What happens |
+|---|---|---|
+| **ERC-8004 · "I have an on-chain agent"** | You've already minted an ERC-8004 agent NFT on BSC | Enter the token ID → the form verifies ownership against your secondary wallet and pulls metadata from `tokenURI` |
+| **OFF-CHAIN · "I haven't minted yet"** | First-time registration from this scaffold — recommended for the workshop | Reserve a commitment ID now, fill the form by hand, embed the ID in your metadata when you mint later |
+
+For the workshop, pick **"Continue without ERC-8004"** — you don't have a token yet.
+
+![Step 4 — Pick a registration type (ERC-8004 vs OFF-CHAIN)](./how-to-register-to-foru-grid/step-4.png)
+
+### Step 5 · Fill the agent details + classification
+
+The form is split into two cards. Map the archetype you built in §5 onto these fields:
+
+**Section 2 · Agent Details**
+
+| Field | What to put | Source in the scaffold |
+|---|---|---|
+| Target Network | `BSC Mainnet` (or `BSC Testnet` if your env has it) | — |
+| Registry Address | Auto-filled: `0x8004A169FB4a3325136EB29fA0ceB6D2e539a432` (BSC Mainnet) | — |
+| Agent Name | The archetype's role, e.g. `Head of Research` | `archetypes/<X>/SOUL.md` (first heading) |
+| Full Description | A paragraph about what the archetype does | Paraphrased from `SOUL.md` |
+| Agent Image | PNG / JPG / WEBP, max 5 MB | Bring your own avatar |
+| x402 Support | Tick only if your archetype implements x402 payment | Off for the scaffold |
+| Agent Wallet | The wallet your agent operates from | Your secondary wallet |
+| Services *(off-chain only)* | One row per endpoint your archetype exposes — see below | `server.ts` routes |
+
+For **Services**, register the endpoints from §6. Useful service names are `MCP`, `A2A`, `web`, `OASF`, `ENS`, `DID`, `email`:
+
+| name | endpoint | maps to |
+|---|---|---|
+| `web` | `https://<your-deployed-host>/invoke` | `POST /invoke` (the archetype's contract) |
+| `MCP` | `https://<your-deployed-host>/mcp` | `ANY /mcp` (Streamable HTTP transport) |
+
+**Section 3 · ForU Grid Classification**
+
+| Field | What to put |
+|---|---|
+| Short Description | One-line pitch (shown on agent cards) |
+| Category | Pick the closest fit — e.g. `Trading`, `DeFi`, `Content` |
+| Sub-category | Refines the category |
+| Whitepaper URL | Required — link to a public doc describing the agent (a GitHub README works) |
+| Cover Image | Header image shown on the agent's detail page |
+
+Hackathon entries: tick **"Hackathon"** and fill the demo YouTube URL, repository URL, contact email, gallery, and team fields that appear.
+
+Submit. The grid creates a draft (off-chain) or finalizes the registration (ERC-8004) — your agent now appears on the public agent directory.
+
+![Step 5 — Agent Details and ForU Grid Classification form](./how-to-register-to-foru-grid/step-5.png)
+
+---
+
 ## Troubleshooting
 
 | Symptom | Fix |
@@ -212,6 +289,8 @@ gcloud run deploy archetype-a \
 | `EADDRINUSE :8080` | Another archetype (or A) is already on port 8080. Set `PORT=8081` (or other) before `npm run dev`. |
 | Browser shows old UI after edits | Hard refresh — `Cmd+Shift+R` (macOS) or `Ctrl+Shift+R`. |
 | `tsx watch` errors with "Cannot find module 'watch'" | You're on an old version of this scaffold where `--env-file` came before `watch` in the script. Pull the latest. |
+| Grid: **"Ownership check failed"** when verifying a token ID | The ERC-8004 token's `ownerOf` doesn't match your linked secondary wallet. Either link the right wallet on **My Profile**, or switch to the off-chain path. |
+| Grid: **Register button disabled** on the form | A required field is blank or your secondary wallet isn't linked. Fill Agent Name, Description, Image, Category, Sub-category, Whitepaper URL, Cover Image, and tick the terms checkbox. |
 
 For more, see `docs/troubleshooting.md`.
 
@@ -219,7 +298,9 @@ For more, see `docs/troubleshooting.md`.
 
 ## What's next
 
+- **Live public deployment** — `docs/live-deployment.md` (all 5 archetypes hosted on a GCP VM at `35.192.185.103:8080-8084` — try them in a browser without installing anything)
 - **Mock data catalog** — `mocks/README.md` (what tweets / news / prices / onchain look like, and how to enrich them via CSV)
 - **Calibration report** — `docs/calibration-2026-05-30.md` (the prompts and responses captured from a real CodeBuddy run, for SOUL review)
+- **Registration screenshots** — `docs/how-to-register-to-foru-grid/` (step-1.png … step-5.png — the source images for §10)
 - **CodeBuddy SDK reference** — `docs/codebuddy-docs/sdk.md`
 - **Workshop architecture (TOR)** — `/Users/zexo/Downloads/TOR — ONE MAN TEAM WORKSHOP - Extended Version.md` (the full event spec)
