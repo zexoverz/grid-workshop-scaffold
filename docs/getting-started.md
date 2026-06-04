@@ -53,6 +53,25 @@ MOCK_ONCHAIN_URL=http://127.0.0.1:5599
 | `openai` | `LLM_API_KEY=sk-…`, `LLM_MODEL=gpt-4o-mini` | ~2–4s per /invoke call |
 | `codebuddy` | `CODEBUDDY_API_KEY=ck_…`, `CODEBUDDY_MODEL=default-model` | ~10–15s per /invoke (SDK spawns its bundled CLI from `node_modules`; nothing extra to install) |
 
+### Get `CODEBUDDY_API_KEY` (only if `AGENT_RUNTIME=codebuddy`)
+
+The archetype's `brain.ts` calls the model via `@tencent-ai/agent-sdk`, which reads this `ck_…` key from `.env`. (This is a separate credential from the CodeBuddy CLI in §7 — the CLI authenticates itself via `/login`.)
+
+1. Open **https://www.codebuddy.ai/profile/keys** and sign in (top-right edition selector should read **Intl - English** — switch off the China edition if your account defaults to it).
+2. Click the purple **+ Create Key** button on the **Access Keys** page.
+
+   ![CodeBuddy Access Keys page — + Create Key button](./codebuddy-docs/img/access-keys-create.png)
+
+3. Name the key (e.g. `foru-workshop`), confirm, and **copy the full `ck_…` value immediately** — the dashboard only shows it once; afterwards it's masked as `ck_*********xxx` like the existing row above.
+4. Paste it into `.env`:
+
+   ```env
+   AGENT_RUNTIME=codebuddy
+   CODEBUDDY_API_KEY=ck_…
+   ```
+
+> Keep the key out of git — `.env` is already in `.gitignore`. Do not commit the raw value.
+
 ---
 
 ## 3 · Start the mock data server
@@ -148,7 +167,97 @@ The `/invoke` shape per archetype lives in `shared/contracts/src/`:
 
 ---
 
-## 7 · Customize the agent
+## 7 · Install the CodeBuddy CLI (recommended for editing)
+
+The workshop uses **Tencent CodeBuddy** as the primary prompting tool for vibe-coding your archetype's `SOUL.md` and `brain.ts`. This is **a separate install from the runtime SDK** in §2 — the SDK runs *inside* your agent at request time; the **CLI** runs *in your terminal* to edit files (same shape as Claude Code or Cursor).
+
+> Skip this step if you're sticking with Claude Code, Cursor, or Codex — the prompt recipes in each archetype's `README.md` transfer cleanly.
+
+### Install
+
+| Method | Requires | Command |
+|---|---|---|
+| **npm** (cross-platform) | Node ≥ 18.20 | `npm install -g @tencent-ai/codebuddy-code` |
+| **Homebrew** (macOS / Linux) | none (no Node needed) | `brew tap Tencent-CodeBuddy/tap && brew install codebuddy-code` |
+| **Native binary** (Beta — macOS / Linux) | none | `curl -fsSL https://www.codebuddy.cn/cli/install.sh \| bash` |
+
+`pnpm`, `yarn`, and `bun` work too — substitute the equivalent global-install command. Windows users: install via npm or the native-binary installer.
+
+### Verify
+
+```bash
+codebuddy --version
+```
+
+If you get `command not found`, the install directory isn't on `PATH`. The npm version lives at `$(npm config get prefix)/bin`; the native binary installs to `~/.local/bin`:
+
+```bash
+export PATH="$HOME/.local/bin:$PATH"
+# Persist by appending to ~/.zshrc (macOS default) or ~/.bashrc, then:
+source ~/.zshrc
+```
+
+### First-run login (for the CLI)
+
+The first time you launch CodeBuddy you have to authenticate. **Recommended: use the built-in `/login` flow** — no manual key handling, the CLI persists the session under `~/.codebuddy/` for you.
+
+```bash
+codebuddy
+```
+
+Inside the session, run:
+
+```
+/login
+```
+
+Pick **"Login via international site"** when prompted (the China-edition option targets the iOA / `copilot.tencent.com` accounts; international is what the workshop uses). The CLI opens a browser to https://www.codebuddy.ai for the OAuth handshake. Once it returns "Logged in", you're done — subsequent `codebuddy` launches skip the prompt.
+
+> The CLI's `/login` session is **separate** from the `CODEBUDDY_API_KEY` used by this scaffold's runtime SDK in §2 — that key is set up in the next sub-section and only matters when you run an archetype with `AGENT_RUNTIME=codebuddy`.
+
+
+### Use it on an archetype
+
+```bash
+cd archetypes/A-head-of-research
+codebuddy                        # starts an interactive session in this folder
+```
+
+Inside the session, paste one of the recipes from `archetypes/A-head-of-research/README.md`, e.g.:
+
+> Rewrite the "Who I am" section to be more contrarian — the analyst who calls out narratives before they break. Keep the JSON shape unchanged.
+
+The repo-root **`CODEBUDDY.md`** and `.codebuddy/rules/` tell CodeBuddy which files belong together per archetype (SOUL ↔ brain ↔ contract ↔ server ↔ public ↔ shared), so a one-file prompt still respects the zod contract.
+
+### Configuration directory
+
+CodeBuddy stores user settings, MCP servers, and custom skills in:
+
+| OS | Path |
+|---|---|
+| macOS / Linux | `~/.codebuddy/` |
+| Windows | `%USERPROFILE%\.codebuddy\` |
+
+Override with `CODEBUDDY_CONFIG_DIR=…` if you need multiple isolated instances.
+
+### Update / uninstall
+
+```bash
+codebuddy update                                 # auto-detects install method
+npm install -g @tencent-ai/codebuddy-code        # fallback if in-place update fails
+
+# Uninstall
+npm uninstall -g @tencent-ai/codebuddy-code      # or: brew uninstall codebuddy-code
+rm -rf ~/.codebuddy                              # optional — wipes user settings
+```
+
+Disable auto-updates with `export DISABLE_AUTOUPDATER=1` in your shell rc.
+
+Full install reference (network troubleshooting, Windows PowerShell installer, npm mirror config): https://www.codebuddy.ai docs.
+
+---
+
+## 8 · Customize the agent
 
 Edit, save, refresh:
 
@@ -160,7 +269,7 @@ Edit, save, refresh:
 
 ---
 
-## 8 · Calibrate all 5 archetypes at once
+## 9 · Calibrate all 5 archetypes at once
 
 Compare persona outputs side-by-side:
 
@@ -181,7 +290,7 @@ For a full multi-archetype calibration capture (with prompts + responses for hum
 
 ---
 
-## 9 · Container deploy *(optional)*
+## 10 · Container deploy *(optional)*
 
 Each archetype ships a `Dockerfile` so you can deploy to Cloud Run, Fly, Fargate, or any container host. Build from the **repo root** (npm workspaces need the lockfile context):
 
@@ -201,9 +310,9 @@ gcloud run deploy archetype-a \
 
 ---
 
-## 10 · Register your archetype on ForU Grid
+## 11 · Register your archetype on ForU Grid
 
-Once your archetype is deployed and publicly reachable, register it on **ForU Grid** so other users can discover and invoke it. You need a deployed URL first (from §9), an account on the grid, and a linked wallet.
+Once your archetype is deployed and publicly reachable, register it on **ForU Grid** so other users can discover and invoke it. You need a deployed URL first (from §10), an account on the grid, and a linked wallet.
 
 ### Step 1 · Start the registration from the landing page
 
@@ -238,7 +347,7 @@ For the workshop, pick **"Continue without ERC-8004"** — you don't have a toke
 
 ### Step 5 · Fill the agent details + classification
 
-The form is split into two cards. Map the archetype you built in §5 onto these fields:
+The form is split into two cards. Map the archetype you built in §5 onto these fields (services come from the routes in §6):
 
 **Section 2 · Agent Details**
 
@@ -301,6 +410,6 @@ For more, see `docs/troubleshooting.md`.
 - **Live public deployment** — `docs/live-deployment.md` (all 5 archetypes hosted on a GCP VM at `35.192.185.103:8080-8084` — try them in a browser without installing anything)
 - **Mock data catalog** — `mocks/README.md` (what tweets / news / prices / onchain look like, and how to enrich them via CSV)
 - **Calibration report** — `docs/calibration-2026-05-30.md` (the prompts and responses captured from a real CodeBuddy run, for SOUL review)
-- **Registration screenshots** — `docs/how-to-register-to-foru-grid/` (step-1.png … step-5.png — the source images for §10)
+- **Registration screenshots** — `docs/how-to-register-to-foru-grid/` (step-1.png … step-5.png — the source images for §11)
 - **CodeBuddy SDK reference** — `docs/codebuddy-docs/sdk.md`
 - **Workshop architecture (TOR)** — `/Users/zexo/Downloads/TOR — ONE MAN TEAM WORKSHOP - Extended Version.md` (the full event spec)

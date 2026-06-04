@@ -116,7 +116,7 @@ Your agent is **complete** when:
 
 1. ✅ The operator console at `http://localhost:<port>/` renders and `POST /invoke` matches the archetype's contract (`shared/contracts/src/<role>.ts`)
 2. ✅ The agent is **deployed** — locally with `npm run dev`, in a container via the `Dockerfile`, or borrowed from the live VM above
-3. ✅ The agent is **registered on FORU Grid** at https://grid.foruai.io — see [`docs/getting-started.md` §10](./docs/getting-started.md#10--register-your-archetype-on-foru-grid) for the screenshot-by-screenshot walkthrough
+3. ✅ The agent is **registered on FORU Grid** at https://grid.foruai.io — see [`docs/getting-started.md` §11](./docs/getting-started.md#11--register-your-archetype-on-foru-grid) for the screenshot-by-screenshot walkthrough
 
 You'll need a wallet + email linked on **My Profile** before the Grid registration form will submit. Workshop-day path: **off-chain registration** (no ERC-8004 token needed yet).
 
