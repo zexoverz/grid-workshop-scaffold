@@ -1,0 +1,88 @@
+---
+description: Patterns for editing src/brain.ts — orchestration: fetch mocks, call LLM, return shape. Load when editing brain.ts or changing data inputs.
+alwaysApply: false
+enabled: true
+updatedAt: 2026-06-04T00:00:00.000Z
+provider:
+---
+
+# Editing `src/brain.ts`
+
+The brain is the **orchestrator**. Its job is narrow:
+
+1. `loadSoul(import.meta.url)` to read the persona.
+2. Fetch from `@foru-workshop/mock-clients`.
+3. Pass the SOUL + data to the LLM via `chatJson` / `codeBuddyChatJson`.
+4. Wrap in try/catch; fall back to `fallback.ts` on `RateLimitError`.
+
+## Canonical brain shape (archetypes A/B/C/E)
+
+```ts
+import { news, onchain, twitter } from "@foru-workshop/mock-clients";
+import {
+  agentRuntime, chatJson, codeBuddyChatJson, loadSoul, RateLimitError,
+} from "@foru-workshop/llm";
+import { OutputSchema, type Input, type Output } from "./contract.js";
+import { fallback } from "./fallback.js";
+
+export async function brain(input: Input): Promise<Output> {
+  const soul = await loadSoul(import.meta.url);
+
+  const [tweets, headlines, largeTx] = await Promise.all([
+    twitter.getRecentTweets(input.token as never),
+    news.getRecentHeadlines(input.token as never),
+    onchain.getLargeTransfers(input.token).catch(() => []),
+  ]);
+
+  const messages = [
+    { role: "system" as const, content: soul },
+    {
+      role: "user" as const,
+      content: JSON.stringify({
+        input,
+        data: { tweets: tweets.slice(0, 12), headlines: headlines.slice(0, 8), largeTransfers: largeTx.slice(0, 5) },
+      }),
+    },
+  ];
+
+  const runtime = agentRuntime();
+  try {
+    if (runtime === "codebuddy") {
+      return await codeBuddyChatJson(messages, OutputSchema, { maxTokens: 700 });
+    }
+    return await chatJson(messages, OutputSchema, { temperature: 0.3, maxTokens: 700 });
+  } catch (err) {
+    if (err instanceof RateLimitError) return fallback(input);
+    throw err;
+  }
+}
+```
+
+## D is the exception — deterministic brain
+
+Archetype D (`Operations Officer`) computes alerts mathematically from price candles. No LLM call. Preserve this property — D must work when `LLM_API_KEY` is missing.
+
+## Editing rules
+
+- **Always parallelize independent mock calls** with `Promise.all`. Sequential awaits balloon `/invoke` latency.
+- **`.catch(() => [])` only for optional sources.** If the required source is absent the brain should throw — let the server's try/catch surface it.
+- **Pre-slice arrays before sending to the LLM** (`.slice(0, N)`). The LLM context is precious.
+- **Use `chatJson(..., OutputSchema)`** — the schema validates the LLM output. Do not stringify-then-`JSON.parse` manually.
+- **Keep `temperature` ≤ 0.4** for structured outputs. 0.3 is the convention.
+- **`maxTokens` 500–900** for the workshop budget.
+
+## Fallback path
+
+`fallback.ts` exports `fallback(input: Input): Output | Promise<Output>`. It must:
+
+- Match the zod `OutputSchema` exactly (validate with `OutputSchema.parse(...)`).
+- Be deterministic — same input → same output.
+- Use the mock clients if it needs data (no LLM call).
+
+Keep fallback under 30 lines; it's a safety net, not a second implementation.
+
+## Common changes
+
+- **"Send more headlines, fewer tweets"** → tweak the `.slice(0, N)` numbers.
+- **"Add a second LLM pass"** → call `chatJson` twice; pass the first response as a user message in the second call. Watch the 30-call cap.
+- **"Add a new source"** → import a new client from `@foru-workshop/mock-clients`, add to `Promise.all`, include in the JSON sent to the LLM, **and** add a `.slice(...)` cap.

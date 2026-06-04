@@ -1,0 +1,61 @@
+---
+description: Local run, Docker, and the public-VM deployment (35.192.185.103:8080-8084). Load when deploying or debugging the live env.
+alwaysApply: false
+enabled: true
+updatedAt: 2026-06-04T00:00:00.000Z
+provider:
+---
+
+# Deployment
+
+Three deploy targets live in this scaffold.
+
+## 1 · Local — `npm run dev`
+
+From the archetype folder:
+
+```bash
+cd archetypes/A-head-of-research
+npm run dev               # tsx watch on src/server.ts
+```
+
+Requires:
+
+- Mock server running: `npm run mocks:serve` (repo root).
+- `.env` configured with `MOCK_*_URL=http://127.0.0.1:5599` and either `LLM_API_KEY` or `CODEBUDDY_API_KEY`.
+
+## 2 · Container — `Dockerfile`
+
+Every archetype ships a single-process `Dockerfile`. Build + run pattern:
+
+```bash
+docker build -t foru-A -f archetypes/A-head-of-research/Dockerfile .
+docker run -p 8080:8080 --env-file .env foru-A
+```
+
+The container exposes the configured `PORT` (default 8080) and runs `npm start`.
+
+## 3 · Public VM — `scripts/deploy/`
+
+The five archetypes run on a single GCP VM at `35.192.185.103:8080-8084`. Operational scripts:
+
+```
+scripts/deploy/
+├── launch.sh           kicks off a fresh deploy
+├── server-deploy.sh    runs on the VM — pulls + restarts archetype services
+└── README.md           the runbook
+```
+
+Full ops doc: `docs/live-deployment.md` (firewall rules, port mapping, cleanup, retry/health-check policy).
+
+## FORU Grid registration (workshop deliverable #3)
+
+Registration UI: https://grid.foruai.io (see `docs/getting-started.md §10`). The workshop path is **off-chain registration** — no ERC-8004 token required on workshop day. The user needs a linked wallet + email on *My Profile* before the Register button enables.
+
+Screenshots walking through the form: `docs/how-to-register-to-foru-grid/step-{1..5}.png`.
+
+## Caveats for CodeBuddy
+
+- **Do not push to `master` automatically.** The user's project convention (see workspace CLAUDE.md) is feature branches → `newdev` → downstream. Wait for explicit instruction before `git push`.
+- **Do not regenerate `Dockerfile`** unless asked — the scaffold's Dockerfile is sized for Cloud Run / Fargate constraints, and the multi-stage layout is intentional.
+- **Do not change the live-VM IP** in docs without explicit user instruction — it's the workshop's published endpoint.

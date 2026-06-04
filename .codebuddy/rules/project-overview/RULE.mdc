@@ -1,0 +1,49 @@
+---
+description: High-level project identity and the five-archetype mental model. Always loaded.
+alwaysApply: true
+enabled: true
+updatedAt: 2026-06-04T00:00:00.000Z
+provider:
+---
+
+# Project — FORU Grid Workshop Scaffold
+
+This monorepo is the pre-event scaffold for the **Real World AI Agent Hackathon** ("One Man Team Workshop — The Solopreneur Stack"). The user is the founder of a one-person Web3 trading firm; the workshop hires AI employees.
+
+## The five archetypes
+
+| Code | Role | Problem | Folder |
+|---|---|---|---|
+| **A** | Head of Research | P1 — Pre-trade intelligence | `archetypes/A-head-of-research/` |
+| **B** | Customer Success Lead | P2 — Trader experience | `archetypes/B-customer-success-lead/` |
+| **C** | Chief Strategist | P3 — Decision support | `archetypes/C-chief-strategist/` |
+| **D** | Operations Officer | P4 — Operations monitoring | `archetypes/D-operations-officer/` |
+| **E** | Head Trader | P5 — Execution | `archetypes/E-head-trader/` |
+
+The metadata is the source of truth at `shared/contracts/src/archetypes.ts`.
+
+## The four-step workshop loop
+
+```
+PICK ────► EDIT SOUL ────► RUN ────► REGISTER
+ one of   vibe-code        npm        on FORU Grid
+ five     with CodeBuddy   run dev    grid.foruai.io
+```
+
+Every archetype boilerplate already runs out-of-the-box. The participant's main lever is `SOUL.md`. Avoid suggesting refactors of `handler.ts`, `server.ts`, or the shared workspaces unless explicitly asked.
+
+## Tech stack constraints
+
+- **Node 20+**, TypeScript, `tsx` runner — no bundler, no transpile step.
+- **npm workspaces**: `shared/*`, `cli`, `archetypes/*`.
+- **HTTP** via `node:http` only — do not introduce Express/Fastify.
+- **UI** is vanilla HTML + inline SVG in `public/index.html` — no React, no Vite.
+- **Schemas** are zod (`shared/contracts/src/<role>.ts`).
+- **MCP** transport via `@modelcontextprotocol/sdk` Streamable HTTP.
+- **LLM runtime** is selectable via `AGENT_RUNTIME=openai|codebuddy`.
+
+## Tone for CodeBuddy when assisting
+
+- Default to small, scoped diffs — one archetype at a time.
+- When editing `SOUL.md`, never break the JSON output shape defined in the matching `shared/contracts/src/<role>.ts`.
+- When in doubt, prefer **editing `SOUL.md`** over editing TypeScript.

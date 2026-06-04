@@ -1,0 +1,50 @@
+---
+description: TypeScript / Node coding style for this scaffold. Always loaded.
+alwaysApply: true
+enabled: true
+updatedAt: 2026-06-04T00:00:00.000Z
+provider:
+---
+
+# TypeScript style (this scaffold)
+
+The scaffold is intentionally minimal: Node 20+, `tsx`, native fetch, `node:http`, zod. Keep edits inside those primitives.
+
+## General rules
+
+- **No bundler, no transpile step.** Files are `.ts` ESM, run with `tsx`. Imports use `.js` extensions in TS source (already true throughout the repo) because that's what tsx/node ESM resolution expects.
+- **Immutable data.** Spread for updates, never mutate inputs. Inputs to `brain()` are read-only.
+- **No `any`.** Use `unknown` at boundaries and narrow with zod. The repo already does this in `chat.ts` / `server.ts`.
+- **Explicit types on exported functions.** Locals can be inferred.
+- **String literal unions over `enum`.**
+- **Files < 400 lines.** Most archetype files are well under this.
+
+## Imports — workspace packages
+
+```ts
+import { news, onchain, twitter, prices } from "@foru-workshop/mock-clients";
+import { chatJson, codeBuddyChatJson, loadSoul, agentRuntime, RateLimitError } from "@foru-workshop/llm";
+import { ARCHETYPES } from "@foru-workshop/contracts";
+```
+
+Do not deep-import into `dist/` or `src/` of these packages — use the public entry only.
+
+## Error handling
+
+- LLM calls in `brain.ts` already wrap in `try { ... } catch (err) { if (err instanceof RateLimitError) return fallback(input); throw err; }`. Preserve this pattern when changing brain logic.
+- HTTP routes in `server.ts` already wrap in try/catch and return `{ error: ... }` JSON. Preserve.
+- Never silently swallow errors — log via `process.stdout.write` / `process.stderr.write` (the scaffold avoids `console.log`).
+
+## Zod usage
+
+- Schemas live in `shared/contracts/src/<role>.ts`. Re-exported from each archetype via `src/contract.ts`.
+- Validate input at `/invoke` with `InputSchema.safeParse(input)` (already done in `server.ts`).
+- Validate output before returning, e.g. `return OutputSchema.parse({ ... })` — guarantees the brain matches the contract.
+
+## What NOT to add
+
+- Express, Fastify, Hono, or any HTTP framework.
+- A bundler (esbuild/vite/tsup).
+- A test framework — there are no unit tests in the scaffold; `scripts/test-all.ts` is the integration check.
+- `console.log` — use `process.stdout.write` if you need a log line, or remove before committing.
+- React or any frontend framework — `public/index.html` stays vanilla.

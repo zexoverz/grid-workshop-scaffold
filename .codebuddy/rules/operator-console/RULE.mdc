@@ -1,0 +1,46 @@
+---
+description: Editing public/index.html — the operator console. Vanilla HTML + inline SVG, no build step. Load when changing UI.
+alwaysApply: false
+enabled: true
+updatedAt: 2026-06-04T00:00:00.000Z
+provider:
+---
+
+# Operator console (`public/index.html`)
+
+Each archetype ships a **single self-contained HTML file** as its operator console. It is served by `server.ts` at `GET /` and is the first thing the user (and workshop facilitator) sees.
+
+## Hard constraints
+
+- **No build step.** Vanilla HTML, inline CSS, inline JS, inline SVG. Do not introduce a bundler or import-map.
+- **No external CDN scripts.** The page must work offline. No `<script src="https://...">`.
+- **No frameworks.** No React, no Vue, no Alpine. Plain DOM APIs.
+- **One file.** Do not split into multiple `.html` / `.css` / `.js`.
+- **Charts are inline SVG.** Hand-built, not Chart.js. See the existing files for the pattern.
+
+## What every console must do
+
+1. Render a friendly title and the archetype's role.
+2. Show the SOUL: fetch `GET /soul` and render the markdown (raw is fine).
+3. Provide a form / input that builds the archetype's `Input` JSON.
+4. Submit it to `POST /invoke` and render the response according to the archetype's output shape.
+5. (A/C/D/E) Fetch `GET /data?...` to populate charts.
+6. (B) Fetch `GET /faq` to populate the FAQ side-panel.
+
+## Per-archetype UI sketches
+
+| Archetype | Console look |
+|---|---|
+| A | Research dashboard: sentiment pill, confidence bar, price + tweet-engagement charts, clickable sources list |
+| B | Chat interface with multi-turn memory, intent pills, follow-up chips, paginated FAQ panel |
+| C | Strategy memo card: accumulate/hold/reduce/exit chip, rationale, risks list, price chart, on-chain flow |
+| D | Ops dashboard: severity banner, alert cards, threshold-overlay chart, **Watch mode** (5s polling) |
+| E | Trade ticket: BUY/HOLD/SELL chip, sized order, slippage gauge, portfolio before→after |
+
+## Editing rules
+
+- **Preserve the existing CSS variables / color tokens** at the top of the file — they shape the workshop's visual identity.
+- **Render every field** the `OutputSchema` declares. If you add a field upstream, render it here.
+- **Loading + error states must be visible.** Never leave the UI blank on failure — the workshop demo is live in front of an audience.
+- **Watch mode (D)** polls `POST /invoke` every 5s. Preserve the 5s interval and the cancel button.
+- **Accessibility**: keep keyboard focus visible and form labels associated.

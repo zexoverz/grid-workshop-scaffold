@@ -1,0 +1,69 @@
+---
+description: Mock data sources (twitter, news, prices, onchain) — endpoints, shapes, CSV files. Load when changing what data an agent sees.
+alwaysApply: false
+enabled: true
+updatedAt: 2026-06-04T00:00:00.000Z
+provider:
+---
+
+# Mock data catalog
+
+All mocks are served by **one Node process**: `npm run mocks:serve` → `http://127.0.0.1:5599`. The CSVs that back them live in `mocks/data/`.
+
+Full catalog: `mocks/README.md`.
+
+## The four sources
+
+| Source | Client import | Function | Used by (default) |
+|---|---|---|---|
+| **twitter** | `twitter` | `getRecentTweets(token)` | A |
+| **news** | `news` | `getRecentHeadlines(token)` | A |
+| **prices** | `prices` | `getOhlcv(pair, limit)` | C, D, E |
+| **onchain** | `onchain` | `getLargeTransfers(token)` | A, C, E |
+
+Any archetype can call any source. The "Used by" column is a default, not a constraint.
+
+## Shapes (returned by clients)
+
+```ts
+// twitter.getRecentTweets("ETH" | "BTC" | "SOL")
+{ id, author, text, likes, retweets, createdAt }[]
+
+// news.getRecentHeadlines("ETH" | "BTC" | "SOL")
+{ id, source, title, url, publishedAt }[]
+
+// prices.getOhlcv("ETHUSDT" | "BTCUSDT" | "SOLUSDT", limit)
+{ openTime, open, high, low, close, volume }[]
+
+// onchain.getLargeTransfers(token)
+{ id, token, from, to, amount, direction, observedAt }[]
+```
+
+`direction` is `"to_exchange" | "from_exchange"` — used as a sell-pressure / accumulation signal.
+
+## Enriching the mocks
+
+CSV-backed, edit-then-restart:
+
+```
+mocks/data/twitter.csv
+mocks/data/news.csv
+mocks/data/prices.csv
+mocks/data/onchain.csv
+```
+
+After editing CSVs, restart `npm run mocks:serve`. No code change needed.
+
+## Health check
+
+```bash
+npm run mocks:check        # uses shared/mock-clients health.ts
+curl http://127.0.0.1:5599/health
+# → { ok: true, counts: { tweets, headlines, prices, onchain } }
+```
+
+## Common failure modes
+
+- `mock-twitter unreachable` → `MOCK_TWITTER_URL` not pointing at `http://127.0.0.1:5599`, or `npm run mocks:serve` isn't running.
+- Empty arrays → token/pair not supported; only `ETH/BTC/SOL` and `ETHUSDT/BTCUSDT/SOLUSDT` are seeded.
+- Brain hangs → likely DNS to `mock-*.foruai.io` from `.env.example`; replace with `127.0.0.1:5599`.

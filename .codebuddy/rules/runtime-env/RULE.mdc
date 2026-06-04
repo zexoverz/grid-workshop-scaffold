@@ -1,0 +1,72 @@
+---
+description: Environment variables and runtime selection (AGENT_RUNTIME, LLM_*, CODEBUDDY_*, MOCK_*_URL).
+alwaysApply: true
+enabled: true
+updatedAt: 2026-06-04T00:00:00.000Z
+provider:
+---
+
+# Runtime & environment
+
+The scaffold reads env from `.env` at the repo root via `tsx --env-file=.env` (see `package.json` scripts). Source of truth: `.env.example`.
+
+## Runtime selector
+
+```
+AGENT_RUNTIME=openai      # default — uses LLM_* below
+AGENT_RUNTIME=codebuddy   # uses Tencent CodeBuddy SDK
+```
+
+`agentRuntime()` is exported from `shared/llm/src/index.ts`. Brains branch on it:
+
+```ts
+const runtime = agentRuntime();
+if (runtime === "codebuddy") {
+  return await codeBuddyChatJson(messages, OutputSchema, { maxTokens: 700 });
+}
+return await chatJson(messages, OutputSchema, { temperature: 0.3, maxTokens: 700 });
+```
+
+## OpenAI-compatible runtime
+
+```
+LLM_BASE_URL=https://api.openai.com/v1
+LLM_API_KEY=
+LLM_MODEL=gpt-4o-mini
+```
+
+Enforced cap: **30 calls per process** (`DAILY_CAP` in `shared/llm/src/index.ts`). On the 31st call, `RateLimitError` is thrown and brains fall back to `fallback.ts`.
+
+## CodeBuddy runtime
+
+```
+CODEBUDDY_API_KEY=
+CODEBUDDY_MODEL=default-model          # or gemini-3.1-pro / gpt-5.5 / kimi-k2.5 / etc.
+CODEBUDDY_INTERNET_ENVIRONMENT=        # "" international, "internal" CN, "ioa" iOA
+```
+
+SDK: `@tencent-ai/agent-sdk@0.2.0`. The CLI ships inside `node_modules/@tencent-ai/agent-sdk/cli/bin/` — **no separate install needed**. Reference: `docs/codebuddy-docs/sdk.md`.
+
+## Mock data endpoints
+
+```
+MOCK_TWITTER_URL=http://127.0.0.1:5599
+MOCK_NEWS_URL=http://127.0.0.1:5599
+MOCK_PRICES_URL=http://127.0.0.1:5599
+MOCK_ONCHAIN_URL=http://127.0.0.1:5599
+```
+
+For local dev, all four point at the same Node mock server (`npm run mocks:serve`). On the workshop VM they're separate hostnames (`mock-*.foruai.io`).
+
+## HTTP port
+
+```
+PORT=8080      # default for archetype A
+```
+
+Per-archetype convention: A=8080, B=8081, C=8082, D=8083, E=8084. Override with `PORT=...` when starting two archetypes side-by-side.
+
+## Things CodeBuddy should NOT touch in .env
+
+- **Do not commit `.env`** — it's in `.gitignore`. Suggest edits, never `git add .env`.
+- **Do not echo `LLM_API_KEY` or `CODEBUDDY_API_KEY` values** into responses, commit messages, or logs.

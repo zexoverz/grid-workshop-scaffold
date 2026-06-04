@@ -1,0 +1,82 @@
+---
+description: What lives in shared/contracts, shared/llm, shared/mock-clients, shared/grid. Load when changing the cross-archetype API surface.
+alwaysApply: false
+enabled: true
+updatedAt: 2026-06-04T00:00:00.000Z
+provider:
+---
+
+# Shared workspaces (`shared/*`)
+
+Four npm workspaces consumed by every archetype. Each is published as a package name; archetypes import from the **package name**, not relative paths.
+
+## `@foru-workshop/contracts` — `shared/contracts/`
+
+Single source of truth for zod I/O schemas.
+
+```
+shared/contracts/src/
+├── index.ts                  re-exports everything
+├── archetypes.ts             ARCHETYPES const (code, role, problem, folder)
+├── research.ts               A — { token, windowHours } / { summary, sentiment, confidence, sources[] }
+├── customer-success.ts       B — chat input / chat output (intent, reply, followups, references)
+├── strategist.ts             C — strategy memo
+├── operations.ts             D — { pair, thresholds } / { alerts[], severity, evaluated }
+└── trader.ts                 E — trade ticket
+```
+
+When the I/O shape changes, this is the file that changes — then propagate to:
+
+- the archetype's `SOUL.md` (JSON example),
+- the archetype's `fallback.ts` (so it still parses),
+- the archetype's `public/index.html` (so the UI renders new fields).
+
+## `@foru-workshop/llm` — `shared/llm/`
+
+LLM client wrappers + SOUL loader.
+
+```
+shared/llm/src/
+├── index.ts        chat(), chatJson(), RateLimitError, agentRuntime()  — OpenAI-compatible
+├── codebuddy.ts    codeBuddyChat(), codeBuddyChatJson()                 — Tencent CodeBuddy SDK
+└── soul.ts         loadSoul(importMetaUrl)                              — reads SOUL.md
+```
+
+Important constants:
+
+- `DAILY_CAP = 30` — process-level call cap. Throws `RateLimitError` past that.
+- `DEFAULT_MODEL = "gpt-4o-mini"`.
+- `chatJson` enforces `response_format: { type: "json_object" }`, parses, then validates with zod.
+
+## `@foru-workshop/mock-clients` — `shared/mock-clients/`
+
+Typed HTTP clients for the four mock sources.
+
+```
+shared/mock-clients/src/
+├── index.ts        re-exports { news, twitter, prices, onchain, health }
+├── http.ts         tiny fetch wrapper + env URL resolution
+├── twitter.ts      getRecentTweets(token: "ETH" | "BTC" | "SOL")
+├── news.ts         getRecentHeadlines(token)
+├── prices.ts       getOhlcv(pair: "ETHUSDT" | "BTCUSDT" | "SOLUSDT", limit)
+├── onchain.ts      getLargeTransfers(token)
+└── health.ts       checkAll() — used by `npm run mocks:check`
+```
+
+Each client reads its base URL from the matching `MOCK_*_URL` env var.
+
+## `@foru-workshop/grid` — `shared/grid/`
+
+Helpers for the FORU Grid registration step (workshop deliverable #3).
+
+```
+shared/grid/src/index.ts
+```
+
+Used by the CLI (`npm run foru submit`). Most archetypes do not import this directly.
+
+## Editing rules
+
+- **Adding a new field to a contract** → update the zod schema AND the inferred type AND every `SOUL.md` example AND every `fallback.ts`.
+- **Adding a new mock source** → new client file + export from `index.ts` + new `MOCK_*_URL` in `.env.example` + entry in `mocks/README.md`.
+- **Bumping a model default** → only `shared/llm/src/index.ts`. Do not change `.env.example`'s recommendation without also updating `docs/getting-started.md`.

@@ -1,0 +1,87 @@
+---
+description: Canonical file layout of every archetype. Read all listed files before editing any one of them.
+alwaysApply: true
+enabled: true
+updatedAt: 2026-06-04T00:00:00.000Z
+provider:
+---
+
+# Archetype anatomy — read the whole folder before editing
+
+Every archetype under `archetypes/<X>/` has the **same shape**. Whenever a user asks you to change something inside an archetype, you MUST open all of the following files in that archetype, plus the shared contract file, before proposing edits. Reading only the file being changed is the most common failure mode.
+
+## Mandatory read-set (per archetype)
+
+```
+archetypes/<X>/
+├── SOUL.md                       persona / system prompt (READ FIRST)
+├── README.md                     workshop recipes for this archetype
+├── package.json                  per-archetype scripts: dev / start
+├── Dockerfile                    deploy container
+├── public/
+│   └── index.html                operator console UI (vanilla HTML/SVG)
+└── src/
+    ├── brain.ts                  orchestration: mocks → LLM → output
+    ├── contract.ts               re-exports zod schemas from shared/contracts
+    ├── handler.ts                LOCKED — wires brain into /invoke (do not edit)
+    ├── server.ts                 node:http server, routes, MCP wiring
+    ├── mcp.ts                    MCP tool definition
+    └── fallback.ts               no-LLM template used on RateLimitError
+```
+
+**Also always read** (the source of truth for I/O):
+
+```
+shared/contracts/src/<role>.ts    zod InputSchema + OutputSchema + sample input
+```
+
+Mapping archetype → contract file:
+
+| Archetype | Contract file |
+|---|---|
+| A — Head of Research | `shared/contracts/src/research.ts` |
+| B — Customer Success Lead | `shared/contracts/src/customer-success.ts` |
+| C — Chief Strategist | `shared/contracts/src/strategist.ts` |
+| D — Operations Officer | `shared/contracts/src/operations.ts` |
+| E — Head Trader | `shared/contracts/src/trader.ts` |
+
+## File responsibilities (do not blur these)
+
+| File | Owns | Edit when |
+|---|---|---|
+| `SOUL.md` | persona, tone, refusals, output JSON example | 90% of customization |
+| `src/brain.ts` | which mocks to call, what slice to send, how to call the LLM | changing data inputs |
+| `src/contract.ts` | re-export shim only — type aliases `Input` / `Output` | almost never |
+| `shared/contracts/src/<role>.ts` | zod schemas (the actual contract) | when the I/O shape changes |
+| `src/server.ts` | HTTP routes (`/`, `/invoke`, `/mcp`, `/soul`, `/data`, `/health`), body limits, MCP session map | adding routes |
+| `src/handler.ts` | wires `brain` into `/invoke` | LOCKED — do not modify |
+| `src/mcp.ts` | MCP tool name + schema + handler | when MCP signature changes |
+| `src/fallback.ts` | template output that satisfies the contract without an LLM call | making fallback richer |
+| `public/index.html` | operator console (single self-contained HTML file) | UI/UX changes |
+
+## Invariants to preserve across files
+
+When changing the output shape, update **all three** simultaneously:
+
+1. `shared/contracts/src/<role>.ts` — the zod `OutputSchema`.
+2. `archetypes/<X>/SOUL.md` — the example JSON in *How I respond*.
+3. `archetypes/<X>/src/fallback.ts` — must still parse against the updated schema.
+4. `archetypes/<X>/public/index.html` — must render the new fields.
+
+If you change one without the others, the agent will pass at the type level and crash at runtime, or the operator console will go blank.
+
+## Routes every archetype exposes (server.ts)
+
+| Method | Path | Returns |
+|---|---|---|
+| `GET` | `/` | `public/index.html` |
+| `POST` | `/invoke` | calls `handle(parsed.data)` → returns the archetype's output |
+| `ANY` | `/mcp` | MCP Streamable HTTP transport (per-session transport map) |
+| `GET` | `/soul` | `SOUL.md` as plain text |
+| `GET` | `/health` | `{ ok: true, archetype, role }` |
+| `GET` | `/data?…` | raw mock data for chart rendering (A/C/D/E) |
+| `GET` | `/faq` | static FAQ entries (B only) |
+
+## Default ports
+
+`A=8080`, `B=8081`, `C=8082`, `D=8083`, `E=8084`. Override with `PORT` env.

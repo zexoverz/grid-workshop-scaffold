@@ -1,0 +1,70 @@
+---
+description: Rules for editing SOUL.md — the LLM system prompt. Preserve contract, voice, and structure.
+alwaysApply: true
+enabled: true
+updatedAt: 2026-06-04T00:00:00.000Z
+provider:
+---
+
+# Editing SOUL.md
+
+`SOUL.md` is the **system prompt** the LLM receives via `loadSoul()` in `shared/llm/src/soul.ts`. It is loaded raw and prepended to the user message. It is the highest-leverage edit point in the workshop.
+
+## Canonical SOUL structure
+
+Every archetype's `SOUL.md` follows this section order:
+
+```markdown
+# SOUL — <Role Name>
+
+> One-line framing of what this file is.
+
+## Who I am
+First-person identity, 2–4 sentences. Defines voice.
+
+## What I do
+Numbered list of the agent's pipeline (what data it consumes, what steps).
+
+## How I respond
+Strict JSON example matching shared/contracts/src/<role>.ts.
+Bullet list of field-level rules ("never wrap in markdown fences", etc.).
+
+## What I will not do
+Bulleted refusals — keeps the agent in its lane.
+
+## Tone
+1–2 sentences on register/style.
+```
+
+Preserve this section structure unless the user explicitly asks for a different layout.
+
+## Hard rules
+
+1. **JSON example must match `shared/contracts/src/<role>.ts`.** Read that file before editing the *How I respond* block. The field names are enforced by zod; if you rename a field in `SOUL.md`, you must also update the schema.
+2. **Never wrap the JSON example in code fences inside the prompt body** — the live JSON the LLM emits must not be fenced. Use a ```json fence only for the *example* in markdown.
+3. **First person, present tense.** "I do X." Not "The agent does X."
+4. **No emojis** (unless the user explicitly asks).
+5. **Refusals section is load-bearing.** Each "What I will not do" bullet maps to a class of hallucination the workshop wants suppressed (e.g. inventing sources, recommending trades). Do not delete refusals when reshaping the SOUL.
+
+## Common edit recipes (mirror archetype READMEs)
+
+- **Change voice/persona** — rewrite *Who I am* + *Tone*.
+- **Add a language mode** — append a conditional section to *How I respond* keyed on an input flag.
+- **Add an output field** — update the JSON example AND the zod `OutputSchema` AND `fallback.ts`.
+- **Tighten refusals** — extend the *What I will not do* list.
+
+## Where SOUL.md gets loaded
+
+```ts
+// shared/llm/src/soul.ts
+export async function loadSoul(importMetaUrl: string): Promise<string>
+```
+
+Called from `brain.ts` like:
+
+```ts
+const soul = await loadSoul(import.meta.url);
+const messages = [{ role: "system", content: soul }, { role: "user", content: ... }];
+```
+
+Do not move `SOUL.md` out of the archetype root — the loader resolves it relative to `import.meta.url`.
