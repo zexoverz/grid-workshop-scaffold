@@ -4,9 +4,9 @@
 workshop: a GitHub account, Git, Node.js, the CodeBuddy IDE, and your own copy of
 the workshop code. No prior experience assumed. Budget ~20–30 minutes.
 
-In this workshop you'll **fork** the repo (make your own copy on GitHub), work on
-it locally, and **push** your changes back to *your* fork — so this guide also
-connects Git to your GitHub account so pushing works.
+In this workshop you'll **clone** the workshop repo, point it at **your own copy**
+on GitHub, and **push** your changes there — so this guide also connects Git to
+your GitHub account so pushing works.
 
 When you finish, continue with [`getting-started.md`](./getting-started.md).
 
@@ -19,8 +19,8 @@ When you finish, continue with [`getting-started.md`](./getting-started.md).
 - [ ] Git installed
 - [ ] Node.js 20 installed
 - [ ] CodeBuddy IDE installed (or VS Code — see §4)
-- [ ] Repo **forked** to your GitHub account
-- [ ] Your fork **cloned** to your laptop
+- [ ] Your **own empty repo** created on GitHub
+- [ ] Workshop repo **cloned** and pointed at your copy
 - [ ] Git **signed in** to GitHub (so `git push` works)
 
 ---
@@ -160,55 +160,54 @@ You can skip this and come back to it later.
 
 ---
 
-## 6 · Fork the workshop repo (Optional)
+## 6 · Create your own copy on GitHub
 
-A **fork** is your own copy of the repo under your GitHub account. You'll make
-your changes there and push to it — you don't need write access to the original.
+You'll keep your work in **your own repo** under your GitHub account — instead of
+forking, you just create an empty repo now and point your local clone at it in
+the next step. You don't need write access to the original.
 
 Do this in your **web browser**:
 
 1. **Sign in to GitHub** (the account from step 1) at https://github.com/login.
-2. Open the workshop repo:
-   **https://github.com/zexoverz/grid-workshop-scaffold**.
-3. Near the **top-right** of the page, click the **Fork** button.
-   *(It sits next to **Star** and **Watch**. Click the word "Fork" itself, not
-   the small number beside it.)*
-4. The **"Create a new fork"** page opens. You can leave everything as-is:
-   - **Owner** → your username (already selected).
-   - **Repository name** → leave it as `grid-workshop-scaffold` (don't rename it).
-   - **"Copy the `master` branch only"** → leave it **checked** (the default).
-5. Click the green **Create fork** button and wait a few seconds.
-6. You'll land on **`https://github.com/<your-username>/grid-workshop-scaffold`** —
-   the URL and the title at the top-left now show **your** username, with a small
-   *"forked from zexoverz/grid-workshop-scaffold"* note underneath. That's your
-   fork. ✅
-
-> Already forked it before and want a fresh copy? Open your fork → **Settings** →
-> scroll to the bottom → **Delete this repository**, then redo the steps above.
+2. Go to **https://github.com/new** (the "Create a new repository" page).
+3. **Repository name** → type `grid-workshop-scaffold`.
+4. Leave it **Public** (or pick Private — your choice).
+5. **Important:** leave **"Add a README file"**, **.gitignore**, and **license**
+   all **unchecked** — the repo must start **empty**, or your first push will be
+   rejected.
+6. Click the green **Create repository** button.
+7. You'll land on **`https://github.com/<your-username>/grid-workshop-scaffold`**
+   with a "set up" page of commands. Ignore those — the next step handles it.
+   Just keep this URL handy. ✅
 
 ---
 
-## 7 · Download (clone) your fork
+## 7 · Clone the workshop repo and point it at your copy
 
-In a terminal, go to where you keep projects (e.g. your Desktop) and clone
-**your fork** (replace `<your-username>` with your GitHub username):
+In a terminal, go to where you keep projects (e.g. your Desktop), clone the
+**original** workshop repo, then re-point its `origin` remote at **your** copy
+(replace `<your-username>` with your GitHub username):
 
 ```bash
 cd ~/Desktop                                   # Windows Git Bash: cd ~/Desktop works too
-git clone https://github.com/<your-username>/grid-workshop-scaffold.git
+git clone https://github.com/zexoverz/grid-workshop-scaffold.git
 cd grid-workshop-scaffold
+git remote set-url origin https://github.com/<your-username>/grid-workshop-scaffold.git
 ```
 
-**Verify** you're in the right place:
+**Verify** the clone landed and `origin` now points at **your** repo:
 
 ```bash
 ls
 # you should see: archetypes  docs  mocks  scripts  shared  package.json  README.md ...
+
+git remote -v
+# origin  https://github.com/<your-username>/grid-workshop-scaffold.git (fetch)
+# origin  https://github.com/<your-username>/grid-workshop-scaffold.git (push)
 ```
 
-> Prefer clicking over typing? In the CodeBuddy IDE / VS Code, use
-> **File → Clone Repository**, paste your fork's URL
-> (`https://github.com/<your-username>/grid-workshop-scaffold.git`), and pick a folder.
+> If `git remote -v` still shows `zexoverz`, re-run the `git remote set-url`
+> command above with your own username.
 
 ---
 
@@ -252,21 +251,23 @@ That's it — `gh` configures Git's credentials, so `git push` won't prompt agai
 
 ## You're ready
 
-Everything is installed and your fork is on your laptop. Open the
-`grid-workshop-scaffold` folder in the CodeBuddy IDE, then follow
-[`getting-started.md`](./getting-started.md) from **§1 · Install** — it picks up
-exactly where this leaves off (`npm install`, configure `.env`, run an archetype).
+Everything is installed and the workshop code is on your laptop, pointed at your
+own GitHub repo. Open the `grid-workshop-scaffold` folder in the CodeBuddy IDE,
+then follow [`getting-started.md`](./getting-started.md) from **§1 · Install** —
+it picks up exactly where this leaves off (`npm install`, configure `.env`, run
+an archetype).
 
-When you've made changes you want to keep, save them back to **your fork**:
+When you've made changes you want to keep, save them back to **your copy**:
 
 ```bash
 git add -A
 git commit -m "my archetype changes"
-git push
+git push -u origin master      # first push: -u links your branch to your repo
 ```
 
-The first `git push` triggers the sign-in from step 8; after that it's silent.
-Your changes then show up at `https://github.com/<your-username>/grid-workshop-scaffold`.
+The first `git push` triggers the sign-in from step 8; after that a plain
+`git push` is enough and it's silent. Your changes then show up at
+`https://github.com/<your-username>/grid-workshop-scaffold`.
 
 ### Stuck?
 
@@ -276,6 +277,7 @@ Your changes then show up at `https://github.com/<your-username>/grid-workshop-s
 | `node: command not found` | Reopen the terminal after installing Node. Still missing → reinstall the LTS from https://nodejs.org. |
 | `node --version` shows v18 or lower | Install the **LTS** (20+) from https://nodejs.org and reopen the terminal. |
 | CodeBuddy IDE won't download on Linux | Expected — it's Windows/macOS only. Use VS Code + the CodeBuddy extension (§4b). |
-| `git clone` asks for a password | You're cloning over SSH or a private URL. Use the `https://…` URL for **your fork** (step 7); cloning a public fork shouldn't prompt. |
+| `git clone` asks for a password | The original repo is public — cloning shouldn't prompt. Use the `https://…` URL exactly as in step 7 (not an SSH `git@` URL). |
 | `git push` asks for a username/password | You haven't signed in yet — do step 8 (`gh auth login`, or sign in via the IDE). When asked for a "Password", that means a Personal Access Token, never your account password. |
-| `git push` → "Permission denied" / 403 | You're pushing to the original repo, not your fork. Confirm `git remote -v` shows **your** username; if not, re-clone your fork (step 7). |
+| `git push` → "Permission denied" / 403 | `origin` still points at the original repo. Run `git remote -v` — it must show **your** username; if not, re-run the `git remote set-url` command in step 7. |
+| `git push` → "Updates were rejected" / "fetch first" | Your GitHub repo wasn't empty (you added a README/license). Either delete it and recreate it empty (step 6), or force the first push: `git push -u origin master --force`. |
