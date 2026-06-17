@@ -160,7 +160,7 @@ You can skip this and come back to it later.
 
 ---
 
-## 6 · Fork the workshop repo
+## 6 · Fork the workshop repo (Optional)
 
 A **fork** is your own copy of the repo under your GitHub account. You'll make
 your changes there and push to it — you don't need write access to the original.
