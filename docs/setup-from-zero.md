@@ -18,13 +18,13 @@ When you finish, continue with [`getting-started.md`](./getting-started.md).
 - [ ] GitHub account created
 - [ ] Git installed
 - [ ] Node.js 20 installed
-- [ ] CodeBuddy IDE installed (or VS Code on Linux)
-- [ ] Repo **forked** to your GitHub account
-- [ ] Your fork **cloned** to your laptop
+- [ ] CodeBuddy IDE installed (or VS Code — see §4)
+- [ ] Your **own empty repo** created on GitHub
+- [ ] Workshop repo **cloned** and pointed at your copy
 - [ ] Git **signed in** to GitHub (so `git push` works)
 
 ---
-x
+
 ## 1 · Create a GitHub account
 
 GitHub stores the workshop code and is how you log in to several tools.
@@ -91,6 +91,12 @@ npm --version       # 10.x.x
 The **CodeBuddy IDE** is the editor you'll use to vibe-code your archetype's
 persona. It's an AI-powered code editor from Tencent.
 
+> **Prefer VS Code?** It works just as well for this workshop — install VS Code
+> and add the CodeBuddy extension for the same AI help. Jump to
+> [**§4b · (Optional) Use VS Code instead**](#4b--optional-use-vs-code-instead).
+> On **Linux**, VS Code is the recommended path (the standalone IDE is
+> Windows/macOS only).
+
 ### Windows & macOS
 
 1. Go to **https://www.codebuddy.ai/ide**.
@@ -112,10 +118,36 @@ Update later via **Account menu → Check for Updates**.
 > Heads-up: the standalone CodeBuddy IDE is **Windows/macOS only** right now.
 > On Linux, use one of these instead — both give you the same CodeBuddy AI help:
 >
-> - **VS Code + CodeBuddy extension** — install VS Code
->   (https://code.visualstudio.com/Download), open the Extensions panel
->   (`Ctrl+Shift+X`), search **"CodeBuddy"**, click Install, then sign in.
+> - **VS Code + CodeBuddy extension** — see
+>   [**§4b**](#4b--optional-use-vs-code-instead) below for install steps.
 > - **CodeBuddy CLI** — the terminal tool in step 5 (works great on Linux).
+
+---
+
+## 4b · (Optional) Use VS Code instead
+
+Rather use **VS Code**? It's a free, popular editor from Microsoft, and with the
+CodeBuddy extension it gives you the same AI help inside the workshop. This is
+also the **recommended path on Linux**.
+
+### Install VS Code
+
+| OS | How |
+|---|---|
+| **Windows** | Download from https://code.visualstudio.com/Download → run the `.exe` (the "User Installer" is fine) and click **Next** through the wizard. |
+| **macOS** | Download from https://code.visualstudio.com/Download → open the `.zip` and **drag Visual Studio Code into Applications**. |
+| **Linux** | Debian/Ubuntu: download the `.deb` from https://code.visualstudio.com/Download → `sudo apt install ./code_*.deb` · Fedora: install the `.rpm` → `sudo dnf install ./code-*.rpm` · Arch: `yay -S visual-studio-code-bin` |
+
+### Add the CodeBuddy extension
+
+1. Launch VS Code.
+2. Open the **Extensions** panel — click the squares icon in the left bar, or
+   press `Ctrl+Shift+X` (macOS: `Cmd+Shift+X`).
+3. Search **"CodeBuddy"**, click **Install** on the official extension.
+4. Click the **CodeBuddy** icon in the left bar and **sign in** with GitHub (the
+   account from step 1), Google, or email.
+
+That's it — everywhere this guide says "CodeBuddy IDE", you can use VS Code instead.
 
 ---
 
@@ -244,8 +276,8 @@ The first `git push` triggers the sign-in from step 8; after that a plain
 | `git: command not found` | Git didn't install or the terminal is stale. Reopen the terminal (Windows: use **Git Bash**), redo step 2. |
 | `node: command not found` | Reopen the terminal after installing Node. Still missing → reinstall the LTS from https://nodejs.org. |
 | `node --version` shows v18 or lower | Install the **LTS** (20+) from https://nodejs.org and reopen the terminal. |
-| CodeBuddy IDE won't download on Linux | Expected — it's Windows/macOS only. Use VS Code + the CodeBuddy extension (step 4, Linux). |
-| `git clone` asks for a password | You're cloning over SSH or a private URL. Use the `https://…` URL for **your fork** (step 7); cloning a public fork shouldn't prompt. |
+| CodeBuddy IDE won't download on Linux | Expected — it's Windows/macOS only. Use VS Code + the CodeBuddy extension (§4b). |
+| `git clone` asks for a password | The original repo is public — cloning shouldn't prompt. Use the `https://…` URL exactly as in step 7 (not an SSH `git@` URL). |
 | `git push` asks for a username/password | You haven't signed in yet — do step 8 (`gh auth login`, or sign in via the IDE). When asked for a "Password", that means a Personal Access Token, never your account password. |
 | `git push` → "Permission denied" / 403 | `origin` still points at the original repo. Run `git remote -v` — it must show **your** username; if not, re-run the `git remote set-url` command in step 7. |
 | `git push` → "Updates were rejected" / "fetch first" | Your GitHub repo wasn't empty (you added a README/license). Either delete it and recreate it empty (step 6), or force the first push: `git push -u origin master --force`. |
