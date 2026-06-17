@@ -1,0 +1,17 @@
+[Unit]
+Description=FORU Grid scaffold (mock server + all 5 archetypes)
+Documentation=https://github.com/zexoverz/grid-workshop-scaffold
+# Bring the whole stack up/down/restart as one unit:
+#   systemctl start  foru-grid.target
+#   systemctl stop   foru-grid.target
+#   systemctl restart foru-grid.target
+Wants=foru-mock.service
+Wants=foru-archetype@A-head-of-research.service
+Wants=foru-archetype@B-customer-success-lead.service
+Wants=foru-archetype@C-chief-strategist.service
+Wants=foru-archetype@D-operations-officer.service
+Wants=foru-archetype@E-head-trader.service
+After=foru-mock.service
+
+[Install]
+WantedBy=multi-user.target

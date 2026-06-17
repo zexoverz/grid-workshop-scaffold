@@ -1,0 +1,33 @@
+# Templated unit — one instance per archetype folder.
+#   systemctl start foru-archetype@A-head-of-research.service
+# The instance name (%i) IS the folder under archetypes/.
+# PORT comes from /etc/foru-grid/<instance>.port so each instance gets a
+# distinct port (8080..8084) without editing this file.
+[Unit]
+Description=FORU Grid archetype %i
+Documentation=https://github.com/zexoverz/grid-workshop-scaffold
+After=network-online.target foru-mock.service
+Wants=network-online.target
+Requires=foru-mock.service
+PartOf=foru-grid.target
+
+[Service]
+Type=simple
+User=foru
+Group=foru
+WorkingDirectory=/opt/foru-grid/scaffold/archetypes/%i
+# .env supplies LLM creds + mock URLs; the .port file supplies PORT (loaded
+# last so it always wins, even if .env still carries a PORT line).
+EnvironmentFile=/opt/foru-grid/scaffold/.env
+EnvironmentFile=/etc/foru-grid/%i.port
+ExecStart=/opt/foru-grid/scaffold/node_modules/.bin/tsx src/server.ts
+Restart=always
+RestartSec=3
+# tsx compiles on a cold start; give it room before declaring failure.
+TimeoutStartSec=60
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=foru-%i
+
+[Install]
+WantedBy=foru-grid.target

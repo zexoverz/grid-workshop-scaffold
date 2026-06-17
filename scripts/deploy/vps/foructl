@@ -1,0 +1,105 @@
+#!/usr/bin/env bash
+#
+# foructl — maintain a systemd-deployed FORU Grid scaffold.
+# Installed to /usr/local/bin/foructl by scripts/deploy/vps/install.sh.
+#
+#   foructl status            # whole stack at a glance
+#   foructl logs [A|mock]     # tail logs (no arg = all; A..E = one archetype)
+#   foructl restart [A|mock]  # restart all, or one service
+#   foructl update [REF]      # git pull <ref>, npm install, restart (default master)
+#   foructl runtime           # switch AI provider / key, then restart
+#   foructl health            # curl /health on every port
+
+set -euo pipefail
+
+APP_USER="foru"
+REPO_DIR="/opt/foru-grid/scaffold"
+ENV_FILE="$REPO_DIR/.env"
+
+SERVICES=(
+  "A-head-of-research:8080"
+  "B-customer-success-lead:8081"
+  "C-chief-strategist:8082"
+  "D-operations-officer:8083"
+  "E-head-trader:8084"
+)
+
+need_root() { [ "$(id -u)" -eq 0 ] || exec sudo "$0" "$@"; }
+
+# Map a short token (A..E, or mock) to a systemd unit. Empty token = whole target.
+unit_for() {
+  local key="${1:-}"
+  [ -z "$key" ] && { echo "foru-grid.target"; return; }
+  [ "$key" = "mock" ] && { echo "foru-mock.service"; return; }
+  for svc in "${SERVICES[@]}"; do
+    case "${svc%:*}" in "${key}"*) echo "foru-archetype@${svc%:*}.service"; return;; esac
+  done
+  echo "unknown service '$key' (use A-E or 'mock')" >&2; exit 1
+}
+
+cmd="${1:-status}"; shift || true
+
+case "$cmd" in
+  status)
+    systemctl --no-pager status foru-grid.target 2>/dev/null | head -n 4 || true
+    echo
+    systemctl --no-pager list-units 'foru-*' --type=service
+    ;;
+
+  logs)
+    need_root "$@"
+    journalctl -fu "$(unit_for "${1:-}")" -n 100
+    ;;
+
+  restart)
+    need_root "$@"
+    unit="$(unit_for "${1:-}")"
+    echo "restarting $unit ..."
+    systemctl restart "$unit"
+    ;;
+
+  update)
+    need_root "$@"
+    ref="${1:-master}"
+    echo "==> updating to '$ref' ..."
+    sudo -u "$APP_USER" git -C "$REPO_DIR" fetch --depth 1 origin "$ref"
+    sudo -u "$APP_USER" git -C "$REPO_DIR" checkout -q FETCH_HEAD
+    sudo -u "$APP_USER" bash -lc "cd '$REPO_DIR' && npm install --no-audit --no-fund --loglevel=error"
+    systemctl restart foru-grid.target
+    echo "==> updated + restarted."
+    ;;
+
+  runtime)
+    need_root "$@"
+    [ -f "$ENV_FILE" ] || { echo "no .env at $ENV_FILE" >&2; exit 1; }
+    echo "  1) OpenAI (sk-…)   2) CodeBuddy (ck-…)"
+    printf "  Select [1-2]: "; read -r choice
+    if [ "$choice" = "2" ]; then
+      printf "  CodeBuddy key (ck-…): "; read -rs key; echo
+      sed -i -E 's/^AGENT_RUNTIME=.*/AGENT_RUNTIME=codebuddy/' "$ENV_FILE"
+      sed -i -E "s#^CODEBUDDY_API_KEY=.*#CODEBUDDY_API_KEY=${key}#" "$ENV_FILE"
+    else
+      printf "  OpenAI key (sk-…): "; read -rs key; echo
+      sed -i -E 's/^AGENT_RUNTIME=.*/AGENT_RUNTIME=openai/' "$ENV_FILE"
+      sed -i -E "s#^LLM_API_KEY=.*#LLM_API_KEY=${key}#" "$ENV_FILE"
+    fi
+    systemctl restart foru-grid.target
+    echo "==> runtime updated + restarted."
+    ;;
+
+  health)
+    rc=0
+    for p in 5599 8080 8081 8082 8083 8084; do
+      if curl -fsS --max-time 3 "http://127.0.0.1:$p/health" >/dev/null 2>&1; then
+        printf '  \033[1;32m✓\033[0m %s\n' "$p"
+      else
+        printf '  \033[1;31m✗\033[0m %s\n' "$p"; rc=1
+      fi
+    done
+    exit $rc
+    ;;
+
+  *)
+    grep -E '^#   foructl' "$0" | sed 's/^#  //'
+    ;;
+esac

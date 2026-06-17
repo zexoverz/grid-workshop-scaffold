@@ -308,6 +308,11 @@ gcloud run deploy archetype-a \
   --set-env-vars "$(grep -v '^#' .env | xargs | tr ' ' ',')"
 ```
 
+**Prefer a plain VPS?** One command bootstraps a bare Ubuntu/Debian box into the
+full stack (mock server + all 5 archetypes) under systemd — auto-restart,
+auto-start on boot, and a `foructl` helper to maintain it. See
+[`docs/deploy-to-vps.md`](./deploy-to-vps.md).
+
 ---
 
 ## 11 · Register your archetype on ForU Grid
@@ -405,6 +410,7 @@ Submit. The grid creates a draft (off-chain) or finalizes the registration (ERC-
 
 ## What's next
 
+- **Deploy your own to a VPS** — `docs/deploy-to-vps.md` (one command → mock server + all 5 archetypes under systemd, with a `foructl` maintenance helper)
 - **Live public deployment** — `docs/live-deployment.md` (all 5 archetypes hosted on a GCP VM at `35.192.185.103:8080-8084` — try them in a browser without installing anything)
 - **Mock data catalog** — `mocks/README.md` (what tweets / news / prices / onchain look like, and how to enrich them via CSV)
 - **Calibration report** — `docs/calibration-2026-05-30.md` (the prompts and responses captured from a real CodeBuddy run, for SOUL review)

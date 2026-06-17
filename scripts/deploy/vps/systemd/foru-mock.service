@@ -1,0 +1,23 @@
+[Unit]
+Description=FORU Grid mock data server (loopback :5599)
+Documentation=https://github.com/zexoverz/grid-workshop-scaffold
+After=network-online.target
+Wants=network-online.target
+PartOf=foru-grid.target
+
+[Service]
+Type=simple
+User=foru
+Group=foru
+WorkingDirectory=/opt/foru-grid/scaffold
+# The mock server binds 127.0.0.1:5599 — never exposed off-box.
+ExecStart=/opt/foru-grid/scaffold/node_modules/.bin/tsx scripts/mock-server.ts
+Restart=always
+RestartSec=3
+TimeoutStartSec=60
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=foru-mock
+
+[Install]
+WantedBy=foru-grid.target
