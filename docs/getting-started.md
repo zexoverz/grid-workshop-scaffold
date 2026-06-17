@@ -6,6 +6,11 @@ This guide walks through running the workshop scaffold on your laptop end-to-end
 
 ## Prerequisites
 
+> **Brand new to this?** If you don't already have Git, Node.js, an editor, or a
+> GitHub account, start with [`setup-from-zero.md`](./setup-from-zero.md) — it
+> walks a blank laptop (Windows / macOS / Linux) through every install, then
+> sends you back here to §1.
+
 - **Node.js ≥ 20** (the workspace uses Node 20+ APIs including `--env-file`). Check with `node --version`.
 - **npm** (ships with Node).
 - **One LLM credential** — pick one:
