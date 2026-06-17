@@ -34,8 +34,7 @@ foru-grid-workshop-scaffold/
 │   ├── mock-clients/       typed clients for the 4 mock data sources
 │   └── grid/               Grid registration helpers
 ├── mocks/                  CSV-backed mock data + catalog README
-├── scripts/                mock-server, calibrate, test-all, deploy/
-├── cli/                    `npm run foru` workshop CLI (choose/status/submit)
+├── scripts/                mock-server, calibrate, deploy/
 ├── docs/                   getting-started, live-deployment, calibration
 ├── .env.example            runtime env template
 ├── package.json            workspace root

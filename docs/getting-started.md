@@ -25,7 +25,7 @@ From the repo root:
 npm install
 ```
 
-This pulls dependencies for the workspace (shared packages + cli + all 5 archetypes).
+This pulls dependencies for the workspace (shared packages + all 5 archetypes).
 
 ---
 
@@ -400,8 +400,6 @@ Submit. The grid creates a draft (off-chain) or finalizes the registration (ERC-
 | `tsx watch` errors with "Cannot find module 'watch'" | You're on an old version of this scaffold where `--env-file` came before `watch` in the script. Pull the latest. |
 | Grid: **"Ownership check failed"** when verifying a token ID | The ERC-8004 token's `ownerOf` doesn't match your linked secondary wallet. Either link the right wallet on **My Profile**, or switch to the off-chain path. |
 | Grid: **Register button disabled** on the form | A required field is blank or your secondary wallet isn't linked. Fill Agent Name, Description, Image, Category, Sub-category, Whitepaper URL, Cover Image, and tick the terms checkbox. |
-
-For more, see `docs/troubleshooting.md`.
 
 ---
 

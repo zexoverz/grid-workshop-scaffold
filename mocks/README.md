@@ -13,7 +13,7 @@ npm run mocks:serve       # → http://127.0.0.1:5599
 Health check the whole stack at any time:
 
 ```bash
-npm run mocks:check
+curl http://127.0.0.1:5599/health
 ```
 
 ---

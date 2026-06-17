@@ -1,7 +1,7 @@
 // Minimal MVS check — runs the handler with the canonical sample input and
 // verifies the output matches the locked contract.
 //
-// Run via `npx foru test` (recommended) or directly with `tsx`.
+// Run directly with `tsx`.
 
 import { RESEARCH_SAMPLE_INPUT, ResearchOutputSchema } from "@foru-workshop/contracts/src/research.js";
 import { handle } from "../src/handler.js";

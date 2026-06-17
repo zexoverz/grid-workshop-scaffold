@@ -57,7 +57,6 @@ After editing CSVs, restart `npm run mocks:serve`. No code change needed.
 ## Health check
 
 ```bash
-npm run mocks:check        # uses shared/mock-clients health.ts
 curl http://127.0.0.1:5599/health
 # → { ok: true, counts: { tweets, headlines, prices, onchain } }
 ```

@@ -1,6 +1,6 @@
 // Local in-process mock server for testing the scaffold without hitting
 // real endpoints. Serves:
-//   /health                       — health probe used by `npx foru mocks`
+//   /health                       — health probe
 //   /tweets?token=...             — mock-twitter shape
 //   /headlines?token=...          — mock-news shape
 //   /ohlcv?symbol=...             — mock-prices shape

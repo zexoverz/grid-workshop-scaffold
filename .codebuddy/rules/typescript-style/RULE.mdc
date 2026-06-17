@@ -45,6 +45,6 @@ Do not deep-import into `dist/` or `src/` of these packages — use the public e
 
 - Express, Fastify, Hono, or any HTTP framework.
 - A bundler (esbuild/vite/tsup).
-- A test framework — there are no unit tests in the scaffold; `scripts/test-all.ts` is the integration check.
+- A test framework — there are no unit tests in the scaffold; each archetype's `test/mvs.test.ts` (run with `tsx`) is the integration check.
 - `console.log` — use `process.stdout.write` if you need a log line, or remove before committing.
 - React or any frontend framework — `public/index.html` stays vanilla.

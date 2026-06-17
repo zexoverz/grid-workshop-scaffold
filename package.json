@@ -5,18 +5,10 @@
   "description": "Real World AI Agent Hackathon — pre-event workshop scaffold. Pick an archetype, write the brain, deploy to FORU Grid.",
   "workspaces": [
     "shared/*",
-    "cli",
     "archetypes/*"
   ],
   "scripts": {
-    "foru": "tsx cli/src/index.ts",
-    "choose": "tsx cli/src/index.ts choose",
-    "status": "tsx cli/src/index.ts status",
-    "test": "tsx cli/src/index.ts test",
-    "submit": "tsx cli/src/index.ts submit",
-    "mocks:check": "tsx cli/src/index.ts mocks",
     "mocks:serve": "tsx scripts/mock-server.ts",
-    "test:all": "tsx scripts/test-all.ts",
     "calibrate": "tsx --env-file=.env scripts/calibrate.ts"
   },
   "devDependencies": {

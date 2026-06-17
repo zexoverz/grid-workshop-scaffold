@@ -60,7 +60,7 @@ shared/mock-clients/src/
 ├── news.ts         getRecentHeadlines(token)
 ├── prices.ts       getOhlcv(pair: "ETHUSDT" | "BTCUSDT" | "SOLUSDT", limit)
 ├── onchain.ts      getLargeTransfers(token)
-└── health.ts       checkAll() — used by `npm run mocks:check`
+└── health.ts       checkAll() — probe all four mock sources (also at GET /health)
 ```
 
 Each client reads its base URL from the matching `MOCK_*_URL` env var.
@@ -73,7 +73,7 @@ Helpers for the FORU Grid registration step (workshop deliverable #3).
 shared/grid/src/index.ts
 ```
 
-Used by the CLI (`npm run foru submit`). Most archetypes do not import this directly.
+Used for the Grid registration step. Most archetypes do not import this directly.
 
 ## Editing rules
 
