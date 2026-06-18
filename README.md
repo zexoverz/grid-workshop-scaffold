@@ -13,16 +13,16 @@ All five archetypes are running live on a public GCP VM. Open any of these in a 
 
 | | Role | Operator console |
 |---|---|---|
-| **A** | Head of Research | http://35.192.185.103:8080 |
-| **B** | Customer Success Lead | http://35.192.185.103:8081 |
-| **C** | Chief Strategist | http://35.192.185.103:8082 |
-| **D** | Operations Officer | http://35.192.185.103:8083 |
-| **E** | Head Trader | http://35.192.185.103:8084 |
+| **A** | Head of Research | http://34.101.221.255:8080 |
+| **B** | Customer Success Lead | http://34.101.221.255:8081 |
+| **C** | Chief Strategist | http://34.101.221.255:8082 |
+| **D** | Operations Officer | http://34.101.221.255:8083 |
+| **E** | Head Trader | http://34.101.221.255:8084 |
 
 **Curl test** (archetype D is deterministic — works even if the shared LLM key is exhausted):
 
 ```bash
-curl -s -X POST http://35.192.185.103:8083/invoke \
+curl -s -X POST http://34.101.221.255:8083/invoke \
   -H 'content-type: application/json' \
   -d '{"pair":"BTCUSDT","thresholds":{"pricePctChange":2,"volumeMultiplier":3}}'
 ```
@@ -171,7 +171,7 @@ If 3+ teams hit the same bug, a facilitator will broadcast a room-wide fix.
 ## No local setup? Two options
 
 1. **GitHub Codespaces** — open the repo in Codespaces, Node is pre-installed, run the Quickstart, forward the port
-2. **Use the live deployment** above (`http://35.192.185.103:8080-8084`) as the integration target — you skip the install entirely but you can't edit your own SOUL. Best for "see what the workshop ships" without committing to a local stack
+2. **Use the live deployment** above (`http://34.101.221.255:8080-8084`) as the integration target — you skip the install entirely but you can't edit your own SOUL. Best for "see what the workshop ships" without committing to a local stack
 
 ---
 

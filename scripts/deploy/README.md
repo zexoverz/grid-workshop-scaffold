@@ -21,7 +21,7 @@ GitHub Actions: .github/workflows/deploy.yml
         │ writes deploy key from secrets.DEPLOY_SSH_KEY
         │ ssh -i key user@host "REF='<sha>' bash -s" < scripts/deploy/server-deploy.sh
         ▼
-VM (faisalfirdani01@35.192.185.103):
+VM (zexo@34.101.221.255):
         bash receives the script on stdin (so no on-disk dependency)
         │ tar-fetches https://github.com/.../archive/<sha>.tar.gz
         │ swaps ~/scaffold (keeps .env, keeps 3 backups)
@@ -66,8 +66,8 @@ exit 0 = green check on the PR/commit
 |---|---|
 | `DEPLOY_SSH_KEY` | The private half of an ed25519 keypair whose public half is in `~/.ssh/authorized_keys` on the VM. |
 | `DEPLOY_KNOWN_HOSTS` | `ssh-keyscan -t ed25519,rsa,ecdsa <host>` output for the VM. |
-| `DEPLOY_SSH_USER` | SSH login user on the VM (e.g. `faisalfirdani01`). |
-| `DEPLOY_SSH_HOST` | VM hostname or public IP (e.g. `35.192.185.103`). |
+| `DEPLOY_SSH_USER` | SSH login user on the VM (e.g. `zexo`). |
+| `DEPLOY_SSH_HOST` | VM hostname or public IP (e.g. `34.101.221.255`). |
 
 Generate a deploy key locally and install it:
 
